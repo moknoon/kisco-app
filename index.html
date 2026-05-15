@@ -1311,8 +1311,18 @@ function saveDrawing(id) {
 }
 
 
-function openModal() { document.getElementById('modal-overlay').classList.add('show'); }
-function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('show');
+  // 모바일에서 하단 메뉴 숨기기
+  const bnav = document.getElementById('bottom-nav');
+  if(bnav) bnav.style.display = 'none';
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+  // 모바일에서 하단 메뉴 다시 표시
+  const bnav = document.getElementById('bottom-nav');
+  if(bnav) bnav.style.display = '';
+}
 function closeModalOnBg(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
 
 /* ════════════════════════════════════
