@@ -1317,7 +1317,11 @@ function closeModalOnBg(e) { if(e.target===document.getElementById('modal-overla
 /* ════════════════════════════════════
    INIT
 ════════════════════════════════════ */
-switchTab('dashboard');
+// 서버 동기화 완료 후 화면 렌더링
+syncAllFromServer().then(() => {
+  initData();
+  switchTab('dashboard');
+});
 </script>
 </body>
 </html>
