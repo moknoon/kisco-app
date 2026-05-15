@@ -274,9 +274,11 @@ td.bold { color:var(--text); font-weight:600; }
   th { font-size:10px; padding:8px 10px; }
   .stat-value { font-size:26px; }
   .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .modal { width:100vw; max-height:93vh; border-radius:16px 16px 0 0; align-self:flex-end; }
-  .modal-overlay { align-items:flex-end; }
-  .modal-body, .modal-header, .modal-footer { padding:16px 18px; }
+.modal { width:100vw; max-height:93vh; border-radius:16px 16px 0 0; align-self:flex-end; display:flex; flex-direction:column; }
+.modal-overlay { align-items:flex-end; }
+.modal-header { padding:16px 18px; flex-shrink:0; }
+.modal-body { padding:16px 18px; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.modal-footer { padding:16px 18px; flex-shrink:0; }
 }
 </style>
 </head>
