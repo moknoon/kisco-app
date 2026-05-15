@@ -454,9 +454,10 @@ function initData() {
     DB.set('init', true);
   }
 }
-initData();
-// 서버에서 최신 데이터 동기화 (첫 실행 시 샘플 데이터 이후에 덮어씀)
-syncAllFromServer();
+// 서버 데이터 우선 동기화, 없을 때만 샘플 초기화
+syncAllFromServer().then(() => {
+  initData();
+});
 
 function getEq() { return DB.load('equipment',[]); }
 function getHist() { return DB.load('history',[]); }
@@ -1079,15 +1080,6 @@ function saveLegal(id) {
    6. DRAWING (도면 관리)
 ════════════════════════════════════ */
 function getDrawings() { return DB.load('drawings', []); }
-
-// 초기 샘플 도면 데이터
-if(!DB.get('drawings')) {
-  DB.set('drawings', [
-    {id:'DW001', title:'5층 전체 평면도', floor:'5층', area:'전체', type:'평면도', linkUrl:'https://drive.google.com/sample1', fileData:null, fileName:null, note:'리뉴얼 후 확정 도면 (2026.04)', updated:'2026-04-10'},
-    {id:'DW002', title:'5층 전기 계통도', floor:'5층', area:'전기실', type:'계통도', linkUrl:'https://drive.google.com/sample2', fileData:null, fileName:null, note:'분전반 MCC-01 포함', updated:'2026-04-12'},
-    {id:'DW003', title:'5층 소방 설비도', floor:'5층', area:'전체', type:'소방도', linkUrl:'', fileData:null, fileName:null, note:'소화기·감지기 위치 표시', updated:'2026-04-15'},
-  ]);
-}
 
 function renderDrawing(floorFilter='', typeFilter='') {
   let drawings = getDrawings();
