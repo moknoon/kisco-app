@@ -426,7 +426,7 @@ async function syncAllFromServer() {
 }
 // 초기 샘플 데이터
 function initData() {
-  if(!DB.get('init')) {
+  if (DB.get('equipment') !== null) return;
     DB.set('equipment', [
       {id:'EQ001',name:'공조기 AHU-01',model:'AHU-500',maker:'삼화에어텍',location:'5층-A구역',risk:'일반',substance:'',installed:'2026-03-15',renewal:true,status:'정상'},
       {id:'EQ002',name:'흄후드 FH-501',model:'FH-1200',maker:'스피드에어',location:'5층-B구역',risk:'고위험',substance:'유해화학물질',installed:'2026-03-20',renewal:true,status:'정상'},
