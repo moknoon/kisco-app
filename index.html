@@ -390,9 +390,9 @@ const DB = {
 
     // 2) 서버에 비동기 저장 (실패해도 로컬은 유지)
     fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ key: k, value: v })
-    }).catch(err => console.warn('서버 저장 실패 (로컬 저장됨):', err));
+  method: 'POST',
+  body: JSON.stringify({ action: 'setData', key: k, value: v })
+}).catch(err => console.warn('서버 저장 실패 (로컬 저장됨):', err));
   },
 
   load(k, def) {
