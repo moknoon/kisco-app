@@ -454,7 +454,7 @@ function initData() {
     ]);
     DB.set('init', true);
   }
-}
+
 // 서버 데이터 우선 동기화, 없을 때만 샘플 초기화
 syncAllFromServer().then(() => {
   initData();
