@@ -1421,44 +1421,59 @@ function switchTab(tab) {
   updateBadges();
 }
 
-// 1. 마우스 누름(mousedown) 시점의 타겟을 기억하기 위한 전역 변수
+/* ════════════════════════════════════
+   모바일 호환 및 드래그 버그가 완전 해결된 통합 제어 영역
+════════════════════════════════════ */
+
+// 1. 마우스 드래그 오동작 방지를 위한 전역 변수
 let modalMouseDownTarget = null;
 
 function openModal() {
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.add('show');
   
-  // 모달이 열릴 때 드래그 오작동을 막기 위한 mousedown 이벤트 리스너를 동적으로 바인딩합니다.
+  // 마우스/터치 다운 시점의 타겟 저장 (드래그 시 창 닫힘 완천 차단)
   overlay.onmousedown = function(e) {
     modalMouseDownTarget = e.target;
   };
 
+  // [모바일 호환성 강화] display: none 대신 투명도 및 포인터 제어로 파일 선택창 충돌 방지
   const bnav = document.getElementById('bottom-nav');
-  if(bnav) bnav.style.setProperty('display', 'none', 'important');
+  if(bnav) {
+    bnav.style.opacity = '0';
+    bnav.style.pointerEvents = 'none';
+  }
 }
 
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('show');
   modalMouseDownTarget = null; // 초기화
+  
   const bnav = document.getElementById('bottom-nav');
-  if(bnav) bnav.style.removeProperty('display');
+  if(bnav) {
+    bnav.style.opacity = '1';
+    bnav.style.pointerEvents = 'all';
+  }
 }
 
-// 2. 배경 클릭 시 창 닫기 함수 수정 (드래그 판정 강화)
+// 2. 배경 클릭 시 창 닫기 함수 (정밀 타겟 판정)
 function closeModalOnBg(e) {
   const overlay = document.getElementById('modal-overlay');
   
-  // [핵심 조건] 
-  // 마우스를 처음 누른 곳(mousedown)과 마우스를 뗀 곳(mouseup/click)이 
-  // 모두 정확히 검은색 배경(modal-overlay)일 때만 창을 닫습니다.
+  // 마우스를 처음 누른 곳(mousedown)과 뗀 곳(mouseup)이 모두 순수 배경일 때만 닫기
   if (e.target === overlay && modalMouseDownTarget === overlay) {
+    
+    // 모달 컨텐츠 내부 영역을 드래그하다가 바깥으로 삐져나간 경우는 무시
+    const modalContent = document.getElementById('modal');
+    if (modalContent && modalContent.contains(e.target)) return;
+    
     closeModal();
   }
 }
 
+// 초기 데이터 동기화 구동
 syncAllFromServer().then(() => {
   initData();
-  switchTab('dashboard');
 });
 </script>
 </body>
