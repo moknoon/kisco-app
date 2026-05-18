@@ -283,7 +283,6 @@ td.bold { color:var(--text); font-weight:600; }
 </head>
 <body>
 <div id="app">
-  <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="logo">
       <div class="logo-icon">🏢</div>
@@ -319,7 +318,6 @@ td.bold { color:var(--text); font-weight:600; }
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main id="main">
     <div id="topbar">
       <div class="page-title" id="page-title">대시보드</div>
@@ -329,7 +327,6 @@ td.bold { color:var(--text); font-weight:600; }
   </main>
 </div>
 
-<!-- BOTTOM NAV (mobile) -->
 <nav id="bottom-nav">
   <div class="bnav-inner">
     <div class="bnav-item active" data-btab="dashboard" onclick="switchTab('dashboard')">
@@ -355,7 +352,6 @@ td.bold { color:var(--text); font-weight:600; }
   </div>
 </nav>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
   <div class="modal" id="modal">
     <div class="modal-header">
@@ -478,22 +474,29 @@ function dday(dateStr) {
   return d;
 }
 function nextDate(base, days) {
+  if(!days || isNaN(days)) return null;
   const d = new Date(base);
   d.setDate(d.getDate()+parseInt(days));
   return d.toISOString().slice(0,10);
 }
-function legalNext(type, lastDate) {
-  const m = {'일상점검':1,'정기점검':180,'특별점검':null,'정밀안전진단':730};
-  const days = m[type];
-  if(!days) return null;
-  return nextDate(lastDate, days);
+function legalNext(type, cycleText, lastDate) {
+  // 사용자가 직접 기입한 주기 텍스트에서 일수(days) 매핑 시도
+  if(cycleText === '매일') return nextDate(lastDate, 1);
+  if(cycleText === '반기 1회' || cycleText === '반기1회') return nextDate(lastDate, 180);
+  if(cycleText === '2년 1회' || cycleText === '2년1회') return nextDate(lastDate, 730);
+  if(cycleText === '1년 1회' || cycleText === '1년1회') return nextDate(lastDate, 365);
+  
+  // 만약 숫자만 들어온 경우 처리
+  if(!isNaN(cycleText)) return nextDate(lastDate, cycleText);
+  
+  // 특별점검 등 매핑 불가하면 다음 예정일 없음
+  return null;
 }
 function ddayBadge(d) {
-  if(d===null) return '<span class="badge badge-gray">-</span>';
+  if(d===null || d === 999) return '<span class="badge badge-gray">-</span>';
   if(d<0) return `<span class="dday-danger">D${d}</span>`;
-  if(d<=7) return `<span class="dday-danger">D-${d}</span>`;
-  if(d<=30) return `<span class="dday-warn">D-${d}</span>`;
-  return `<span class="dday-ok">D-${d}</span>`;
+  if(d>0) return `<span class="dday-ok">D-${d}</span>`;
+  return `<span class="dday-danger">D-Day</span>`;
 }
 function riskBadge(r) {
   if(r==='고위험') return '<span class="badge badge-danger">고위험</span>';
@@ -523,7 +526,7 @@ function updateBadges() {
 
   const legal = getLegal();
   const urgentLegal = legal.filter(l => {
-    const n = legalNext(l.type, l.lastDate);
+    const n = legalNext(l.type, l.cycle, l.lastDate);
     return n && dday(n) <= 30;
   }).length;
   ['badge-legal','bnav-badge-legal'].forEach(id => {
@@ -560,7 +563,7 @@ function renderDashboard() {
     .filter(c=>c.d<=30).sort((a,b)=>a.d-b.d);
 
   const urgentLegal = legal.map(l => {
-    const n = legalNext(l.type, l.lastDate);
+    const n = legalNext(l.type, l.cycle, l.lastDate);
     return {...l, next:n, d:n?dday(n):999};
   }).filter(l=>l.d<=30 && l.next).sort((a,b)=>a.d-b.d);
 
@@ -973,12 +976,10 @@ function saveCons(id) {
 function renderLegal(filter='') {
   let legal = getLegal();
   const enriched = legal.map(l => {
-    const n = legalNext(l.type, l.lastDate);
+    const n = legalNext(l.type, l.cycle, l.lastDate);
     return {...l, next:n, d:n?dday(n):999};
   }).sort((a,b)=>a.d-b.d);
   const filtered = filter ? enriched.filter(l=>l.area.includes(filter)||l.type.includes(filter)) : enriched;
-
-  const cycleInfo = {'일상점검':'매일','정기점검':'반기 1회','특별점검':'리뉴얼/사고 후','정밀안전진단':'2년 1회 (고위험)'};
 
   document.getElementById('topbar-actions').innerHTML = `
     <button class="btn btn-primary" onclick="openLegalModal()">+ 법정점검 등록</button>
@@ -1004,7 +1005,7 @@ function renderLegal(filter='') {
             filtered.map(l=>`<tr>
               <td class="bold">${l.area}</td>
               <td><span class="badge badge-purple">${l.type}</span></td>
-              <td style="font-size:12px;color:var(--text3)">${cycleInfo[l.type]||'-'}</td>
+              <td style="font-size:12px;color:var(--text2);font-weight:500;">${l.cycle||'-'}</td>
               <td style="font-family:var(--mono);font-size:12px">${l.lastDate}</td>
               <td style="font-family:var(--mono);font-size:12px">${l.next||'-'}</td>
               <td>${l.next?ddayBadge(l.d):'<span class="badge badge-gray">해당없음</span>'}</td>
@@ -1037,21 +1038,71 @@ function delLegal(id) {
   DB.set('legal', getLegal().filter(l=>l.id!==id));
   renderLegal(); updateBadges();
 }
+
+/* 점검 종류 선택 변경시 주기 추천 처리 */
+function handleLegalTypeChange(val) {
+  const cycleInput = document.getElementById('lg-cycle');
+  if(!cycleInput) return;
+  
+  const defaultCycles = {
+    '일상점검': '매일',
+    '정기점검': '반기 1회',
+    '특별점검': '리뉴얼 후 1회',
+    '정밀안전진단': '2년 1회'
+  };
+  if(defaultCycles[val]) {
+    cycleInput.value = defaultCycles[val];
+  }
+}
+
 function openLegalModal(id) {
   const l = id ? getLegal().find(l=>l.id===id) : null;
-  const types = ['일상점검','정기점검','특별점검','정밀안전진단'];
+  const defaultTypes = ['일상점검','정기점검','특별점검','정밀안전진단'];
+  
+  // 기존에 저장된 데이터가 기본 카테고리에 속해있는지 확인
+  const isCustomType = l && !defaultTypes.includes(l.type);
+
   document.getElementById('modal-title').textContent = l ? '법정점검 수정' : '법정점검 등록';
   document.getElementById('modal-body').innerHTML = `
     <div class="form-grid form-grid-2">
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">구역(연구실명) *</label><input class="form-input" id="lg-area" placeholder="예) 5층-A구역 실험실" value="${l?.area||''}"></div>
-      <div class="form-group"><label class="form-label">점검종류 *</label>
-        <select class="form-select" id="lg-type">
-          ${types.map(t=>`<option ${l?.type===t?'selected':''}>${t}</option>`).join('')}
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">구역(연구실명) *</label>
+        <input class="form-input" id="lg-area" placeholder="예) 5층-A구역 실험실" value="${l?.area||''}">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">점검종류 카테고리</label>
+        <select class="form-select" id="lg-type-select" onchange="document.getElementById('lg-type-custom').value=this.value; handleLegalTypeChange(this.value);">
+          <option value="">-- 직접 입력 또는 선택 --</option>
+          ${defaultTypes.map(t=>`<option value="${t}" ${l?.type===t?'selected':''}>${t}</option>`).join('')}
+          <option value="custom" ${isCustomType?'selected':''}>직접 입력</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">최근 실시일 *</label><input class="form-input" type="date" id="lg-last" value="${l?.lastDate||today()}"></div>
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">결과 보고서 파일명 또는 URL (3년 보존)</label><input class="form-input" id="lg-report" placeholder="예) report_5A_20260501.pdf" value="${l?.report||''}"></div>
-      <div class="form-group" style="grid-column:1/-1"><label class="form-label">비고</label><textarea class="form-textarea" id="lg-note" style="min-height:60px">${l?.note||''}</textarea></div>
+
+      <div class="form-group">
+        <label class="form-label">점검종류 명칭 *</label>
+        <input class="form-input" id="lg-type-custom" placeholder="예) 일상점검, 소방정밀점검 등" value="${l?.type||''}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">법정 주기 *</label>
+        <input class="form-input" id="lg-cycle" placeholder="예) 매일, 반기 1회, 2년 1회, 180" value="${l?.cycle||'매일'}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">최근 실시일 *</label>
+        <input class="form-input" type="date" id="lg-last" value="${l?.lastDate||today()}">
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">결과 보고서 파일명 또는 URL (3년 보존)</label>
+        <input class="form-input" id="lg-report" placeholder="예) report_5A_20260501.pdf" value="${l?.report||''}">
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">비고</label>
+        <textarea class="form-textarea" id="lg-note" style="min-height:60px">${l?.note||''}</textarea>
+      </div>
     </div>
   `;
   document.getElementById('modal-footer').innerHTML = `
@@ -1060,12 +1111,24 @@ function openLegalModal(id) {
   `;
   openModal();
 }
+
 function saveLegal(id) {
   const area = document.getElementById('lg-area').value.trim();
+  let type = document.getElementById('lg-type-custom').value.trim();
+  const cycle = document.getElementById('lg-cycle').value.trim();
+  
+  // 혹시 드롭다운에서 선택해놓고 텍스트상자가 비어있다면 드롭다운 값 채용
+  if(!type) type = document.getElementById('lg-type-select').value;
+
   if(!area) { alert('구역은 필수입니다.'); return; }
+  if(!type || type === 'custom') { alert('점검종류를 정확히 기입해주세요.'); return; }
+  if(!cycle) { alert('법정 주기를 기입해주세요.'); return; }
+
   const data = {
     id:id||'LG'+String(Date.now()).slice(-6),
-    area, type:document.getElementById('lg-type').value,
+    area, 
+    type,
+    cycle,
     lastDate:document.getElementById('lg-last').value,
     report:document.getElementById('lg-report').value.trim(),
     note:document.getElementById('lg-note').value.trim()
