@@ -274,11 +274,11 @@ td.bold { color:var(--text); font-weight:600; }
   th { font-size:10px; padding:8px 10px; }
   .stat-value { font-size:26px; }
   .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-.modal { width:100vw; max-height:93vh; border-radius:16px 16px 0 0; align-self:flex-end; display:flex; flex-direction:column; overflow:hidden; }
-.modal-overlay { align-items:flex-end; }
-.modal-header { padding:16px 18px; flex-shrink:0; }
-.modal-body { padding:16px 18px; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-.modal-footer { padding:16px 18px; flex-shrink:0; background:var(--surface); border-top:1px solid var(--border); }
+  .modal { width:100vw; max-height:93vh; border-radius:16px 16px 0 0; align-self:flex-end; display:flex; flex-direction:column; overflow:hidden; }
+  .modal-overlay { align-items:flex-end; }
+  .modal-header { padding:16px 18px; flex-shrink:0; }
+  .modal-body { padding:16px 18px; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .modal-footer { padding:16px 18px; flex-shrink:0; background:var(--surface); border-top:1px solid var(--border); }
 }
 </style>
 </head>
@@ -368,7 +368,7 @@ td.bold { color:var(--text); font-weight:600; }
 /* ════════════════════════════════════
    DATA STORE  (Google Sheets 연동)
 ════════════════════════════════════ */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxaXy7geoQSlY4szNv_QFmtC5EypxOzvjqL5-gUPqypEZZYXfGfASfA2cI0nH18bSB/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkA5wNy1Ucf6eUEpKC6_ASMuYpaTqidUeGVHM6dUi4JebIU1OCFa0I6C_y5ldjffk7/exec';
 
 const DB = {
   _cache: {},
@@ -408,352 +408,55 @@ const DB = {
     }
   }
 };
-
-async function syncAllFromServer() {
-  const keys = ['equipment', 'history', 'consumable', 'legal', 'drawings'];
-  await Promise.all(keys.map(k => DB.sync(k)));
-  if(typeof currentTab !== 'undefined' && currentTab) switchTab(currentTab);
-}
-
-function initData() {
-  if (DB.get('equipment') !== null) return;
-    DB.set('equipment', [
-      {id:'EQ001',name:'공조기 AHU-01',model:'AHU-500',maker:'삼화에어텍',location:'5층-A구역',risk:'일반',substance:'',installed:'2026-03-15',renewal:true,status:'정상',fileData:null,fileName:null},
-      {id:'EQ002',name:'흄후드 FH-501',model:'FH-1200',maker:'스피드에어',location:'5층-B구역',risk:'고위험',substance:'유해화학물질',installed:'2026-03-20',renewal:true,status:'정상',fileData:null,fileName:null},
-      {id:'EQ003',name:'분전반 MCC-01',model:'MCC-100A',maker:'LS산전',location:'5층 전기실',risk:'일반',substance:'',installed:'2026-04-01',renewal:true,status:'정상',fileData:null,fileName:null},
-      {id:'EQ004',name:'냉각탑 CT-01',model:'CT-200T',maker:'덕양산업',location:'옥상',risk:'저위험',substance:'',installed:'2023-06-10',renewal:false,status:'정상',fileData:null,fileName:null},
-      {id:'EQ005',name:'소화기 FE-01',model:'ABC-3kg',maker:'파이어맨',location:'5층 복도',risk:'저위험',substance:'',installed:'2026-04-10',renewal:true,status:'정상',fileData:null,fileName:null},
-    ]);
-    DB.set('history', [
-      {id:'HT001',eqId:'EQ001',date:'2026-05-01',type:'특별점검',result:'양호',work:'리뉴얼 후 공조기 초기 점검. 필터 상태 양호, 냉매 압력 정상.',action:'조치 없음',manager:'김관리',renewal:true},
-      {id:'HT002',eqId:'EQ002',date:'2026-05-02',type:'특별점검',result:'일부결함',work:'흄후드 배기 속도 기준치 하회 확인.',action:'배기팬 벨트 교체 완료. 재측정 후 기준치 내 확인.',manager:'이시설',renewal:true},
-      {id:'HT003',eqId:'EQ004',date:'2026-04-15',type:'정기점검',result:'양호',work:'냉각탑 반기 정기점검. 팬모터 전류값 정상.',action:'',manager:'박점검',renewal:false},
-    ]);
-    DB.set('consumable', [
-      {id:'CS001',eqId:'EQ001',name:'에어필터',cycle:90,lastDate:'2026-03-15',fileData:null,fileName:null},
-      {id:'CS002',eqId:'EQ002',name:'흄후드 필터',cycle:180,lastDate:'2026-03-20',fileData:null,fileName:null},
-      {id:'CS003',eqId:'EQ002',name:'배기팬 벨트',cycle:365,lastDate:'2026-05-02',fileData:null,fileName:null},
-      {id:'CS004',eqId:'EQ004',name:'냉각탑 충전재',cycle:730,lastDate:'2023-06-10',fileData:null,fileName:null},
-      {id:'CS005',eqId:'EQ004',name:'오일',cycle:180,lastDate:'2026-04-15',fileData:null,fileName:null},
-    ]);
-    DB.set('legal', [
-      {id:'LG001',area:'5층-A구역 실험실',title:'안전점검 (일상)',cycle:1,lastDate:'2026-05-08',report:'',note:'리뉴얼 완료 후 최초 일상점검 실시'},
-      {id:'LG002',area:'5층-B구역 실험실',title:'정기안전점검 (반기)',cycle:180,lastDate:'2026-05-02',report:'special_5B_20260502.pdf',note:'리뉴얼 특별안전점검 완료'},
-      {id:'LG003',area:'5층 전체',title:'소방시설 외관점검',cycle:30,lastDate:'2026-05-10',report:'',note:'매월 자체 외관점검'},
-      {id:'LG004',area:'5층-B구역 실험실',title:'정밀안전진단',cycle:730,lastDate:'2024-05-15',report:'detailed_5B_2024.pdf',note:'유해화학물질 취급 연구실'},
-    ]);
-    DB.set('init', true);
-  }
-
-syncAllFromServer().then(() => {
-  initData();
-});
-
-function getEq() { return DB.load('equipment',[]); }
-function getHist() { return DB.load('history',[]); }
-function getCons() { return DB.load('consumable',[]); }
-function getLegal() { return DB.load('legal',[]); }
-function eqName(id) { const e=getEq().find(e=>e.id===id); return e?e.name:id; }
-
 /* ════════════════════════════════════
-   UTILITY
+   2. EQUIPMENT (모달 기능 및 수리 이력 연동 연장선)
 ════════════════════════════════════ */
-let _idCounter = Date.now();
-function uid() { return 'ID'+(++_idCounter); }
-
-function today() { return new Date().toISOString().slice(0,10); }
-function dday(dateStr) {
-  const d = Math.ceil((new Date(dateStr)-new Date(today()))/(1000*60*60*24));
-  return d;
-}
-function nextDate(base, days) {
-  const d = new Date(base);
-  d.setDate(d.getDate()+parseInt(days));
-  return d.toISOString().slice(0,10);
-}
-function ddayBadge(d) {
-  if(d===null) return '<span class="badge badge-gray">-</span>';
-  if(d<0) return `<span class="dday-danger">D${d}</span>`;
-  if(d<=7) return `<span class="dday-danger">D-${d}</span>`;
-  if(d<=30) return `<span class="dday-warn">D-${d}</span>`;
-  return `<span class="dday-ok">D-${d}</span>`;
-}
-function riskBadge(r) {
-  if(r==='고위험') return '<span class="badge badge-danger">고위험</span>';
-  if(r==='일반') return '<span class="badge badge-blue">일반</span>';
-  return '<span class="badge badge-gray">저위험</span>';
-}
-function resultBadge(r) {
-  const m = {'양호':'badge-green','일부결함':'badge-warn','개선필요':'badge-danger','사용제한':'badge-danger'};
-  return `<span class="badge ${m[r]||'badge-gray'}">${r}</span>`;
-}
-function statusDot(s) {
-  const m = {'정상':'dot-green','점검중':'dot-warn','고장':'dot-danger','사용중지':'dot-gray'};
-  return `<span class="dot ${m[s]||'dot-gray'}"></span> ${s}`;
-}
-
-/* 이미지 리사이징 공통 유틸 함수 */
-function resizeImage(file, maxWidth, callback) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      let width = img.width;
-      let height = img.height;
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-      callback(dataUrl);
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-/* 이미지 실시간 업로드 핸들러 */
-function handleImageUpload(input, previewImgId, previewContainerId) {
-  const file = input.files[0];
-  if(!file) return;
-  if(!file.type.startsWith('image/')) { alert('이미지 파일만 업로드 가능합니다.'); input.value=''; return; }
-  
-  resizeImage(file, 800, function(resizedDataUrl) {
-    const imgElement = document.getElementById(previewImgId);
-    const container = document.getElementById(previewContainerId);
-    if(imgElement) {
-      imgElement.src = resizedDataUrl;
-      imgElement.style.display = 'block';
-    }
-    if(container) container.style.display = 'block';
-    input.setAttribute('data-resized', resizedDataUrl);
-    input.setAttribute('data-filename', file.name);
-  });
-}
-
-function viewImagePopup(title, dataUrl) {
-  if(!dataUrl) return;
-  document.getElementById('modal-title').textContent = title + " 사진 보기";
-  document.getElementById('modal-body').innerHTML = `
-    <div style="text-align:center;">
-      <img src="${dataUrl}" style="max-width:100%; max-height:70vh; border-radius:6px; object-fit:contain;">
-    </div>
-  `;
-  document.getElementById('modal-footer').innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">닫기</button>`;
-  openModal();
-}
-
-function updateBadges() {
-  const cons = getCons();
-  const urgentCons = cons.filter(c => {
-    const n = nextDate(c.lastDate, c.cycle);
-    return dday(n) <= 7;
-  }).length;
-  ['badge-consumable','bnav-badge-consumable'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) { el.textContent=urgentCons; el.style.display=urgentCons>0?'':'none'; }
-  });
-
-  const legal = getLegal();
-  const urgentLegal = legal.filter(l => {
-    const n = nextDate(l.lastDate, l.cycle);
-    return dday(n) <= 30;
-  }).length;
-  ['badge-legal','bnav-badge-legal'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) { el.textContent=urgentLegal; el.style.display=urgentLegal>0?'':'none'; }
-  });
-}
-
-/* ════════════════════════════════════
-   1. DASHBOARD
-════════════════════════════════════ */
-function renderDashboard() {
-  const eq = getEq(), hist = getHist(), cons = getCons(), legal = getLegal();
-  const statusCounts = {정상:0,점검중:0,고장:0,사용중지:0};
-  eq.forEach(e => statusCounts[e.status] = (statusCounts[e.status]||0)+1);
-  const renewalCount = eq.filter(e=>e.renewal).length;
-
-  const urgentCons = cons.map(c => ({...c, next:nextDate(c.lastDate,c.cycle), d:dday(nextDate(c.lastDate,c.cycle))}))
-    .filter(c=>c.d<=30).sort((a,b)=>a.d-b.d);
-
-  const urgentLegal = legal.map(l => ({...l, next:nextDate(l.lastDate,l.cycle), d:dday(nextDate(l.lastDate,l.cycle))}))
-    .filter(l=>l.d<=30).sort((a,b)=>a.d-b.d);
-
-  const recentHist = [...hist].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
-
-  document.getElementById('topbar-actions').innerHTML = '';
-  document.getElementById('content').innerHTML = `
-    <div class="grid grid-4" style="margin-bottom:20px;">
-      <div class="stat-card blue">
-        <div class="stat-label">전체 장비</div>
-        <div class="stat-value">${eq.length}</div>
-        <div class="stat-sub">5층 리뉴얼 ${renewalCount}대 포함</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-label">정상 운영</div>
-        <div class="stat-value">${statusCounts.정상||0}</div>
-        <div class="stat-sub">점검중 ${statusCounts.점검중||0} · 고장 ${statusCounts.고장||0}</div>
-      </div>
-      <div class="stat-card warn">
-        <div class="stat-label">소모품 교체 임박</div>
-        <div class="stat-value">${urgentCons.length}</div>
-        <div class="stat-sub">D-30 이내 항목</div>
-      </div>
-      <div class="stat-card purple">
-        <div class="stat-label">법정점검 임박</div>
-        <div class="stat-value">${urgentLegal.length}</div>
-        <div class="stat-sub">D-30 이내 항목</div>
-      </div>
-    </div>
-
-    <div class="grid grid-2" style="margin-bottom:20px;">
-      <div class="card">
-        <div class="section-header">
-          <div><div class="section-title">🔔 소모품 교체 임박</div><div class="section-sub">D-30 이내 항목</div></div>
-        </div>
-        ${urgentCons.length===0?'<div class="empty">교체 임박 항목 없음</div>':
-          '<div class="table-wrap"><table><thead><tr><th>소모품</th><th>장비</th><th>예정일</th><th>D-day</th></tr></thead><tbody>'+
-          urgentCons.map(c=>`<tr>
-            <td class="bold">${c.name}</td>
-            <td>${eqName(c.eqId)}</td>
-            <td style="font-family:var(--mono);font-size:12px">${c.next}</td>
-            <td>${ddayBadge(c.d)}</td>
-          </tr>`).join('')+'</tbody></table></div>'
-        }
-      </div>
-      <div class="card">
-        <div class="section-header">
-          <div><div class="section-title">⚠️ 법정점검 임박</div><div class="section-sub">D-30 이내 항목</div></div>
-        </div>
-        ${urgentLegal.length===0?'<div class="empty">법정점검 임박 항목 없음</div>':
-          '<div class="table-wrap"><table><thead><tr><th>점검 항목</th><th>구역</th><th>예정일</th><th>D-day</th></tr></thead><tbody>'+
-          urgentLegal.map(l=>`<tr>
-            <td class="bold">${l.title}</td>
-            <td>${l.area}</td>
-            <td style="font-family:var(--mono);font-size:12px">${l.next}</td>
-            <td>${ddayBadge(l.d)}</td>
-          </tr>`).join('')+'</tbody></table></div>'
-        }
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-header">
-        <div><div class="section-title">📋 최근 점검/수리 이력</div><div class="section-sub">최근 5건</div></div>
-        <button class="btn btn-ghost btn-sm" onclick="switchTab('history')">전체 보기</button>
-      </div>
-      ${recentHist.length===0?'<div class="empty">이력 없음</div>':
-        '<div class="table-wrap"><table><thead><tr><th>날짜</th><th>장비</th><th>유형</th><th>결과</th><th>담당자</th></tr></thead><tbody>'+
-        recentHist.map(h=>`<tr>
-          <td style="font-family:var(--mono);font-size:12px">${h.date}</td>
-          <td class="bold">${eqName(h.eqId)} ${h.renewal?'<span class="renewal-tag">리뉴얼</span>':''}</td>
-          <td><span class="badge badge-blue">${h.type}</span></td>
-          <td>${resultBadge(h.result)}</td>
-          <td>${h.manager}</td>
-        </tr>`).join('')+'</tbody></table></div>'
-      }
-    </div>
-  `;
-}
-
-/* ════════════════════════════════════
-   2. EQUIPMENT
-════════════════════════════════════ */
-function renderEquipment(filter='') {
-  let eq = getEq();
-  if(filter) eq = eq.filter(e => e.name.includes(filter)||e.location.includes(filter)||e.model.includes(filter));
-
-  document.getElementById('topbar-actions').innerHTML = `
-    <button class="btn btn-primary" onclick="openEqModal()">+ 장비 등록</button>
-  `;
-  document.getElementById('content').innerHTML = `
-    <div class="filter-bar">
-      <div class="search-bar">
-        <span>🔍</span>
-        <input type="text" placeholder="장비명, 위치 검색..." onkeyup="renderEquipment(this.value)" value="${filter}">
-      </div>
-      <span class="tag">${eq.length}건</span>
-      <span class="tag tag-new">리뉴얼 ${eq.filter(e=>e.renewal).length}대</span>
-    </div>
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>장비ID</th><th>사진</th><th>장비명</th><th>모델/제조사</th><th>위치(구역)</th><th>위험등급</th><th>상태</th><th>설치일</th><th>관리</th></tr></thead>
-          <tbody>
-          ${eq.length===0?'<tr><td colspan="9" class="empty">등록된 장비 없음</td></tr>':
-            eq.map(e=>`<tr>
-              <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${e.id}</td>
-              <td>${e.fileData ? `<span style="cursor:pointer; font-size:16px;" onclick="viewImagePopup('${e.name}', '${e.fileData}')">🖼️</span>` : '-'}</td>
-              <td class="bold">${e.name} ${e.renewal?'<span class="renewal-tag">리뉴얼</span>':''}</td>
-              <td><div>${e.model}</div><div style="font-size:11px;color:var(--text3)">${e.maker}</div></td>
-              <td>${e.location}</td>
-              <td>${riskBadge(e.risk)}</td>
-              <td>${statusDot(e.status)}</td>
-              <td style="font-family:var(--mono);font-size:11px">${e.installed}</td>
-              <td>
-                <div style="display:flex;gap:4px;">
-                  <button class="btn btn-ghost btn-sm" onclick="openEqModal('${e.id}')">수정</button>
-                  <button class="btn btn-danger btn-sm" onclick="delEq('${e.id}')">삭제</button>
-                </div>
-              </td>
-            </tr>`).join('')
-          }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-function delEq(id) {
-  if(!confirm('삭제하시겠습니까?')) return;
-  DB.set('equipment', getEq().filter(e=>e.id!==id));
-  renderEquipment();
-}
-
 function openEqModal(id) {
   const eq = id ? getEq().find(e=>e.id===id) : null;
   document.getElementById('modal-title').textContent = eq ? '장비 수정' : '장비 등록';
   document.getElementById('modal-body').innerHTML = `
     <div class="form-grid form-grid-2">
-      <div class="form-group"><label class="form-label">장비명 *</label><input class="form-input" id="eq-name" value="${eq?.name||''}"></div>
-      <div class="form-group"><label class="form-label">모델명</label><input class="form-input" id="eq-model" value="${eq?.model||''}"></div>
-      <div class="form-group"><label class="form-label">제조사</label><input class="form-input" id="eq-maker" value="${eq?.maker||''}"></div>
-      <div class="form-group"><label class="form-label">설치위치(구역) *</label><input class="form-input" id="eq-location" value="${eq?.location||''}"></div>
-      <div class="form-group"><label class="form-label">위험등급 *</label>
-        <select class="form-select" id="eq-risk">
-          ${['저위험','일반','고위험'].map(r=>`<option ${eq?.risk===r?'selected':''}>${r}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group"><label class="form-label">취급물질 (해당 시)</label><input class="form-input" id="eq-substance" placeholder="예) 유해화학물질, 독성가스" value="${eq?.substance||''}"></div>
-      <div class="form-group"><label class="form-label">설치일</label><input class="form-input" type="date" id="eq-installed" value="${eq?.installed||today()}"></div>
-      <div class="form-group"><label class="form-label">상태</label>
-        <select class="form-select" id="eq-status">
-          ${['정상','점검중','고장','사용중지'].map(s=>`<option ${eq?.status===s?'selected':''}>${s}</option>`).join('')}
-        </select>
-      </div>
+      <div class="form-group"><label class="form-label">장비명 *</label><input class="form-input" id="eq-name" value="${eq?eq.name:''}"></div>
+      <div class="form-group"><label class="form-label">모델명</label><input class="form-input" id="eq-model" value="${eq?eq.model:''}"></div>
     </div>
-    
-    <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-top:8px;display:flex;flex-direction:column;gap:10px;">
+    <div class="form-grid form-grid-2">
+      <div class="form-group"><label class="form-label">제조사</label><input class="form-input" id="eq-maker" value="${eq?eq.maker:''}"></div>
+      <div class="form-group"><label class="form-label">위치(구역) *</label><input class="form-input" id="eq-location" value="${eq?eq.location:''}"></div>
+    </div>
+    <div class="form-grid form-grid-3">
       <div class="form-group">
-        <label class="form-label">📸 장비 사진 업로드 (자동 압축 리사이징)</label>
-        <input type="file" id="eq-file" accept="image/*" class="form-input" style="padding:6px;" onchange="handleImageUpload(this, 'eq-img-preview', 'eq-upload-preview')">
-        ${eq?.fileName?`<div style="font-size:12px;color:var(--success);margin-top:4px">✓ 등록된 파일: ${eq.fileName}</div>`:''}
+        <label class="form-label">위험 등급</label>
+        <select class="form-select" id="eq-risk">
+          <option value="일반" ${eq?.risk==='일반'?'selected':''}>일반</option>
+          <option value="고위험" ${eq?.risk==='고위험'?'selected':''}>고위험</option>
+          <option value="저위험" ${eq?.risk==='저위험'?'selected':''}>저위험</option>
+        </select>
       </div>
-      <div id="eq-upload-preview" style="${eq?.fileData ? '' : 'display:none;'}">
-        <img id="eq-img-preview" src="${eq?.fileData || ''}" style="max-width:100%;max-height:160px;border-radius:6px;object-fit:contain;background:var(--surface3);">
+      <div class="form-group">
+        <label class="form-label">상태</label>
+        <select class="form-select" id="eq-status">
+          <option value="정상" ${eq?.status==='정상'?'selected':''}>정상</option>
+          <option value="점검중" ${eq?.status==='점검중'?'selected':''}>점검중</option>
+          <option value="고장" ${eq?.status==='고장'?'selected':''}>고장</option>
+          <option value="사용중지" ${eq?.status==='사용중지'?'selected':''}>사용중지</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">설치일</label><input class="form-input" type="date" id="eq-installed" value="${eq?eq.installed:today()}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">관리대상 물질 (유해화학물질 등)</label><input class="form-input" id="eq-substance" value="${eq?eq.substance:''}"></div>
+    <div class="form-group">
+      <label class="form-checkbox">
+        <input type="checkbox" id="eq-renewal" ${eq? (eq.renewal?'checked':'') : 'checked'}>
+        <span class="form-label" style="margin:0;">연구실 리뉴얼 대상 장비 (5층)</span>
+      </label>
+    </div>
+    <div class="form-group">
+      <label class="form-label">장비 사진 첨부 (모바일 촬영 지원)</label>
+      <input type="file" accept="image/*" class="form-input" onchange="handleImageUpload(this, 'eq-preview-img', 'eq-preview-container')">
+      <div id="eq-preview-container" style="margin-top:10px; display:${eq?.fileData?'block':'none'};">
+        <img id="eq-preview-img" src="${eq?.fileData||''}" style="max-width:100%; max-height:150px; border-radius:6px; border:1px solid var(--border);">
       </div>
     </div>
-
-    <label class="form-checkbox" style="margin-top:10px;">
-      <input type="checkbox" id="eq-renewal" ${eq?.renewal?'checked':''}> 5층 리뉴얼 신규 반입 장비
-    </label>
   `;
   document.getElementById('modal-footer').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal()">취소</button>
@@ -765,48 +468,42 @@ function openEqModal(id) {
 function saveEq(id) {
   const name = document.getElementById('eq-name').value.trim();
   const location = document.getElementById('eq-location').value.trim();
-  if(!name||!location) { alert('장비명과 위치는 필수입니다.'); return; }
-  
-  const fileInput = document.getElementById('eq-file');
-  const resizedData = fileInput.getAttribute('data-resized');
-  const fileName = fileInput.getAttribute('data-filename');
-  const existing = id ? getEq().find(e=>e.id===id) : null;
+  if(!name || !location) { alert('장비명과 위치는 필수 입력입니다.'); return; }
+
+  const imgInput = document.querySelector('input[type="file"]');
+  const fileData = imgInput.getAttribute('data-resized') || (id ? getEq().find(e=>e.id===id)?.fileData : null);
+  const fileName = imgInput.getAttribute('data-filename') || (id ? getEq().find(e=>e.id===id)?.fileName : null);
 
   const data = {
-    id: id||'EQ'+String(Date.now()).slice(-6),
-    name, model:document.getElementById('eq-model').value.trim(),
-    maker:document.getElementById('eq-maker').value.trim(),
-    location, risk:document.getElementById('eq-risk').value,
-    substance:document.getElementById('eq-substance').value.trim(),
-    installed:document.getElementById('eq-installed').value,
-    renewal:document.getElementById('eq-renewal').checked,
-    status:document.getElementById('eq-status').value,
-    fileData: resizedData || existing?.fileData || null,
-    fileName: fileName || existing?.fileName || null
+    id: id || 'EQ'+String(Date.now()).slice(-3),
+    name, location,
+    model: document.getElementById('eq-model').value.trim(),
+    maker: document.getElementById('eq-maker').value.trim(),
+    risk: document.getElementById('eq-risk').value,
+    substance: document.getElementById('eq-substance').value.trim(),
+    installed: document.getElementById('eq-installed').value,
+    renewal: document.getElementById('eq-renewal').checked,
+    status: document.getElementById('eq-status').value,
+    fileData, fileName
   };
-  let eqs = getEq();
-  if(id) eqs = eqs.map(e=>e.id===id?data:e);
-  else eqs.push(data);
-  
-  try {
-    DB.set('equipment', eqs);
-  } catch(e) {
-    alert('저장 용량 초과입니다. 다른 사진을 이용하거나 파일 크기를 조절해 주세요.');
-    return;
-  }
-  closeModal(); renderEquipment();
+
+  let list = getEq();
+  if(id) list = list.map(e=>e.id===id?data:e);
+  else list.push(data);
+
+  DB.set('equipment', list);
+  closeModal();
+  renderEquipment();
 }
 
 /* ════════════════════════════════════
-   3. HISTORY
+   3. INSPECTION / REPAIR HISTORY
 ════════════════════════════════════ */
-function renderHistory(filter='', typeFilter='') {
+function renderHistory(filter='') {
   let hist = getHist();
-  if(filter) hist = hist.filter(h=>eqName(h.eqId).includes(filter)||h.work.includes(filter)||h.manager.includes(filter));
-  if(typeFilter) hist = hist.filter(h=>h.type===typeFilter);
-  hist = [...hist].sort((a,b)=>b.date.localeCompare(a.date));
-
-  const types = ['일상점검','정기점검','특별점검','정밀안전진단','수리','긴급'];
+  if(filter) {
+    hist = hist.filter(h => eqName(h.eqId).includes(filter) || h.work.includes(filter) || h.manager.includes(filter));
+  }
   document.getElementById('topbar-actions').innerHTML = `
     <button class="btn btn-primary" onclick="openHistModal()">+ 이력 등록</button>
   `;
@@ -814,36 +511,31 @@ function renderHistory(filter='', typeFilter='') {
     <div class="filter-bar">
       <div class="search-bar">
         <span>🔍</span>
-        <input type="text" placeholder="장비명, 담당자 검색..." onkeyup="renderHistory(this.value, '${typeFilter}')" value="${filter}">
+        <input type="text" placeholder="장비명, 작업 내용 검색..." onkeyup="renderHistory(this.value)" value="${filter}">
       </div>
-      <select class="form-select" style="width:auto;padding:7px 12px" onchange="renderHistory('${filter}', this.value)">
-        <option value="">전체 유형</option>
-        ${types.map(t=>`<option ${typeFilter===t?'selected':''}>${t}</option>`).join('')}
-      </select>
       <span class="tag">${hist.length}건</span>
     </div>
     <div class="card">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>날짜</th><th>장비</th><th>점검유형</th><th>점검결과</th><th>작업내용</th><th>조치결과</th><th>담당자</th><th>관리</th></tr></thead>
+          <thead><tr><th>점검일자</th><th>장비명</th><th>점검유형</th><th>점검/수리 내용</th><th>조치 결과</th><th>담당자</th><th>관리</th></tr></thead>
           <tbody>
-          ${hist.length===0?'<tr><td colspan="8" class="empty">이력 없음</td></tr>':
-            hist.map(h=>`<tr>
-              <td style="font-family:var(--mono);font-size:12px">${h.date}</td>
-              <td class="bold">${eqName(h.eqId)} ${h.renewal?'<span class="renewal-tag">리뉴얼</span>':''}</td>
-              <td><span class="badge badge-blue">${h.type}</span></td>
-              <td>${resultBadge(h.result)}</td>
-              <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h.work}">${h.work}</td>
-              <td style="font-size:12px;color:var(--text2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.action||'-'}</td>
-              <td>${h.manager}</td>
-              <td>
-                <div style="display:flex;gap:4px;">
-                  <button class="btn btn-ghost btn-sm" onclick="openHistModal('${h.id}')">수정</button>
-                  <button class="btn btn-danger btn-sm" onclick="delHist('${h.id}')">삭제</button>
-                </div>
-              </td>
-            </tr>`).join('')
-          }
+            ${hist.length===0?'<tr><td colspan="7" class="empty">등록된 이력이 없습니다.</td></tr>':
+              hist.map(h=>`<tr>
+                <td style="font-family:var(--mono);font-size:12px">${h.date}</td>
+                <td class="bold">${eqName(h.eqId)} ${h.renewal?'<span class="renewal-tag">리뉴얼</span>':''}</td>
+                <td><span class="badge badge-blue">${h.type}</span></td>
+                <td><div style="max-width:250px; white-space:pre-wrap;">${h.work}</div></td>
+                <td>${resultBadge(h.result)} ${h.action ? `<div style="font-size:11px; color:var(--text3); margin-top:2px;">${h.action}</div>`:''}</td>
+                <td>${h.manager}</td>
+                <td>
+                  <div style="display:flex;gap:4px;">
+                    <button class="btn btn-ghost btn-sm" onclick="openHistModal('${h.id}')">수정</button>
+                    <button class="btn btn-danger btn-sm" onclick="delHist('${h.id}')">삭제</button>
+                  </div>
+                </td>
+              </tr>`).join('')
+            }
           </tbody>
         </table>
       </div>
@@ -858,34 +550,50 @@ function delHist(id) {
 }
 
 function openHistModal(id) {
-  const h = id ? getHist().find(h=>h.id===id) : null;
-  const eqs = getEq();
-  const types = ['일상점검','정기점검','특별점검','정밀안전진단','수리','긴급'];
-  const results = ['양호','일부결함','개선필요','사용제한'];
-  document.getElementById('modal-title').textContent = h ? '이력 수정' : '점검/수리 이력 등록';
+  const h = id ? getHist().find(x=>x.id===id) : null;
+  const eq = getEq();
+  document.getElementById('modal-title').textContent = h ? '점검/수리 이력 수정' : '점검/수리 이력 등록';
   document.getElementById('modal-body').innerHTML = `
     <div class="form-grid form-grid-2">
-      <div class="form-group"><label class="form-label">장비 *</label>
-        <select class="form-select" id="ht-eq">
-          ${eqs.map(e=>`<option value="${e.id}" ${h?.eqId===e.id?'selected':''}>${e.name}</option>`).join('')}
+      <div class="form-group">
+        <label class="form-label">대상 장비 *</label>
+        <select class="form-select" id="ht-eqId">
+          ${eq.map(e=>`<option value="${e.id}" ${h?.eqId===e.id?'selected':''}>${e.name} (${e.location})</option>`).join('')}
         </select>
       </div>
-      <div class="form-group"><label class="form-label">점검일자 *</label><input class="form-input" type="date" id="ht-date" value="${h?.date||today()}"></div>
-      <div class="form-group"><label class="form-label">점검유형 *</label>
-        <select class="form-select" id="ht-type">
-          ${types.map(t=>`<option ${h?.type===t?'selected':''}>${t}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group"><label class="form-label">점검결과 *</label>
-        <select class="form-select" id="ht-result">
-          ${results.map(r=>`<option ${h?.result===r?'selected':''}>${r}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group"><label class="form-label">담당자</label><input class="form-input" id="ht-manager" value="${h?.manager||''}"></div>
+      <div class="form-group"><label class="form-label">점검/수리 일자 *</label><input class="form-input" type="date" id="ht-date" value="${h?h.date:today()}"></div>
     </div>
-    <div class="form-group"><label class="form-label">작업내용 *</label><textarea class="form-textarea" id="ht-work">${h?.work||''}</textarea></div>
-    <div class="form-group"><label class="form-label">조치결과 (결함 발견 시 필수)</label><textarea class="form-textarea" id="ht-action" style="min-height:60px">${h?.action||''}</textarea></div>
-    <label class="form-checkbox"><input type="checkbox" id="ht-renewal" ${h?.renewal?'checked':''}> 5층 리뉴얼 관련 점검</label>
+    <div class="form-grid form-grid-2">
+      <div class="form-group">
+        <label class="form-label">점검 유형</label>
+        <select class="form-select" id="ht-type">
+          <option value="정기점검" ${h?.type==='정기점검'?'selected':''}>정기점검</option>
+          <option value="일상점검" ${h?.type==='일상점검'?'selected':''}>일상점검</option>
+          <option value="특별점검" ${h?.type==='특별점검'?'selected':''}>특별점검</option>
+          <option value="긴급수리" ${h?.type==='긴급수리'?'selected':''}>긴급수리</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">결과 판정</label>
+        <select class="form-select" id="ht-result">
+          <option value="양호" ${h?.result==='양호'?'selected':''}>양호 (이상없음)</option>
+          <option value="일부결함" ${h?.result==='일부결함'?'selected':''}>일부결함</option>
+          <option value="개선필요" ${h?.result==='개선필요'?'selected':''}>개선필요</option>
+          <option value="사용제한" ${h?.result==='사용제한'?'selected':''}>사용제한</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">점검 및 현상 내용 *</label><textarea class="form-textarea" id="ht-work" placeholder="구체적인 점검 상태 및 이상 현상 서술">${h?h.work:''}</textarea></div>
+    <div class="form-group"><label class="form-label">조치 및 개선 내용</label><textarea class="form-textarea" id="ht-action" placeholder="부품 교체 및 수리 완료 내역 서술">${h?h.action||'':''}</textarea></div>
+    <div class="form-grid form-grid-2">
+      <div class="form-group"><label class="form-label">담당자 *</label><input class="form-input" id="ht-manager" value="${h?h.manager:'김관리'}"></div>
+      <div class="form-group" style="justify-content:center;">
+        <label class="form-checkbox" style="margin-top:24px;">
+          <input type="checkbox" id="ht-renewal" ${h? (h.renewal?'checked':'') : 'checked'}>
+          <span class="form-label" style="margin:0;">5층 리뉴얼 관련 이력</span>
+        </label>
+      </div>
+    </div>
   `;
   document.getElementById('modal-footer').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal()">취소</button>
@@ -895,70 +603,66 @@ function openHistModal(id) {
 }
 
 function saveHist(id) {
+  const eqId = document.getElementById('ht-eqId').value;
   const work = document.getElementById('ht-work').value.trim();
-  if(!work) { alert('작업내용은 필수입니다.'); return; }
+  const manager = document.getElementById('ht-manager').value.trim();
+  if(!eqId || !work || !manager) { alert('필수 요소를 모두 입력해 주세요.'); return; }
+
   const data = {
-    id: id||'HT'+String(Date.now()).slice(-6),
-    eqId:document.getElementById('ht-eq').value,
-    date:document.getElementById('ht-date').value,
-    type:document.getElementById('ht-type').value,
-    result:document.getElementById('ht-result').value,
-    work, action:document.getElementById('ht-action').value.trim(),
-    manager:document.getElementById('ht-manager').value.trim(),
-    renewal:document.getElementById('ht-renewal').checked
+    id: id || 'HT'+String(Date.now()).slice(-3),
+    eqId, work, manager,
+    date: document.getElementById('ht-date').value,
+    type: document.getElementById('ht-type').value,
+    result: document.getElementById('ht-result').value,
+    action: document.getElementById('ht-action').value.trim(),
+    renewal: document.getElementById('ht-renewal').checked
   };
-  let hist = getHist();
-  if(id) hist = hist.map(h=>h.id===id?data:h);
-  else hist.push(data);
-  DB.set('history', hist);
-  closeModal(); renderHistory();
+
+  let list = getHist();
+  if(id) list = list.map(h=>h.id===id?data:h);
+  else list.push(data);
+
+  DB.set('history', list);
+  closeModal();
+  renderHistory();
 }
 
 /* ════════════════════════════════════
-   4. CONSUMABLE
+   4. CONSUMABLE MANAGEMENT
 ════════════════════════════════════ */
-function renderConsumable(filter='') {
-  let cons = getCons();
-  const enriched = cons.map(c => ({
-    ...c, next:nextDate(c.lastDate,c.cycle), d:dday(nextDate(c.lastDate,c.cycle))
-  })).sort((a,b)=>a.d-b.d);
-  const filtered = filter ? enriched.filter(c=>c.name.includes(filter)||eqName(c.eqId).includes(filter)) : enriched;
-
+function renderConsumable() {
+  const cons = getCons();
   document.getElementById('topbar-actions').innerHTML = `
     <button class="btn btn-primary" onclick="openConsModal()">+ 소모품 등록</button>
   `;
   document.getElementById('content').innerHTML = `
-    <div class="filter-bar">
-      <div class="search-bar">
-        <span>🔍</span>
-        <input type="text" placeholder="소모품명, 장비명 검색..." onkeyup="renderConsumable(this.value)" value="${filter}">
-      </div>
-      <span class="tag">${filtered.length}건</span>
-      <span class="tag" style="background:var(--danger-dim);color:var(--danger)">D-7 이하 ${filtered.filter(c=>c.d<=7).length}건</span>
-    </div>
+    <div class="filter-bar"><span class="tag">총 ${cons.length}건</span></div>
     <div class="card">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>사진</th><th>소모품명</th><th>장비</th><th>교체주기</th><th>마지막 교체일</th><th>다음 교체 예정일</th><th>D-day</th><th>관리</th></tr></thead>
+          <thead><tr><th>소모품명</th><th>연동 장비</th><th>교체 주기</th><th>최근 교체일</th><th>다음 예정일</th><th>남은 기한</th><th>관리</th></tr></thead>
           <tbody>
-          ${filtered.length===0?'<tr><td colspan="8" class="empty">등록된 소모품 없음</td></tr>':
-            filtered.map(c=>`<tr>
-              <td>${c.fileData ? `<span style="cursor:pointer; font-size:16px;" onclick="viewImagePopup('${c.name}', '${c.fileData}')">🖼️</span>` : '-'}</td>
-              <td class="bold">${c.name}</td>
-              <td>${eqName(c.eqId)}</td>
-              <td style="font-family:var(--mono)">${c.cycle}일</td>
-              <td style="font-family:var(--mono);font-size:12px">${c.lastDate}</td>
-              <td style="font-family:var(--mono);font-size:12px">${c.next}</td>
-              <td>${ddayBadge(c.d)}</td>
-              <td>
-                <div style="display:flex;gap:4px;">
-                  <button class="btn btn-success btn-sm" onclick="completeCons('${c.id}')">✓ 교체완료</button>
-                  <button class="btn btn-ghost btn-sm" onclick="openConsModal('${c.id}')">수정</button>
-                  <button class="btn btn-danger btn-sm" onclick="delCons('${c.id}')">삭제</button>
-                </div>
-              </td>
-            </tr>`).join('')
-          }
+            ${cons.length===0?'<tr><td colspan="7" class="empty">등록된 소모품이 없습니다.</td></tr>':
+              cons.map(c=>{
+                const next = nextDate(c.lastDate, c.cycle);
+                const d = dday(next);
+                return `<tr>
+                  <td class="bold">${c.name}</td>
+                  <td>${eqName(c.eqId)}</td>
+                  <td style="font-family:var(--mono); font-size:12px;">${c.cycle}일</td>
+                  <td style="font-family:var(--mono); font-size:12px;">${c.lastDate}</td>
+                  <td style="font-family:var(--mono); font-size:12px;">${next}</td>
+                  <td>${ddayBadge(d)}</td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-success btn-sm" onclick="replaceCons('${c.id}')">교체 완료</button>
+                      <button class="btn btn-ghost btn-sm" onclick="openConsModal('${c.id}')">수정</button>
+                      <button class="btn btn-danger btn-sm" onclick="delCons('${c.id}')">삭제</button>
+                    </div>
+                  </td>
+                </tr>`;
+              }).join('')
+            }
           </tbody>
         </table>
       </div>
@@ -966,42 +670,37 @@ function renderConsumable(filter='') {
   `;
 }
 
-function completeCons(id) {
-  let cons = getCons();
-  cons = cons.map(c => c.id===id ? {...c, lastDate:today()} : c);
-  DB.set('consumable', cons);
-  renderConsumable(); updateBadges();
+function replaceCons(id) {
+  if(!confirm('오늘 날짜 기준으로 교체 완료 처리하시겠습니까?')) return;
+  let list = getCons();
+  list = list.map(c => c.id===id ? {...c, lastDate:today()} : c);
+  DB.set('consumable', list);
+  updateBadges();
+  renderConsumable();
 }
+
 function delCons(id) {
   if(!confirm('삭제하시겠습니까?')) return;
   DB.set('consumable', getCons().filter(c=>c.id!==id));
-  renderConsumable(); updateBadges();
+  updateBadges();
+  renderConsumable();
 }
+
 function openConsModal(id) {
-  const c = id ? getCons().find(c=>c.id===id) : null;
-  const eqs = getEq();
+  const c = id ? getCons().find(x=>x.id===id) : null;
+  const eq = getEq();
   document.getElementById('modal-title').textContent = c ? '소모품 수정' : '소모품 등록';
   document.getElementById('modal-body').innerHTML = `
-    <div class="form-grid form-grid-2">
-      <div class="form-group"><label class="form-label">소모품명 *</label><input class="form-input" id="cs-name" value="${c?.name||''}"></div>
-      <div class="form-group"><label class="form-label">연결 장비 *</label>
-        <select class="form-select" id="cs-eq">
-          ${eqs.map(e=>`<option value="${e.id}" ${c?.eqId===e.id?'selected':''}>${e.name}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group"><label class="form-label">교체주기 (일) *</label><input class="form-input" type="number" id="cs-cycle" value="${c?.cycle||90}"></div>
-      <div class="form-group"><label class="form-label">마지막 교체일 *</label><input class="form-input" type="date" id="cs-last" value="${c?.lastDate||today()}"></div>
+    <div class="form-group"><label class="form-label">소모품명 *</label><input class="form-input" id="cs-name" value="${c?c.name:''}"></div>
+    <div class="form-group">
+      <label class="form-label">연동 장비 *</label>
+      <select class="form-select" id="cs-eqId">
+        ${eq.map(e=>`<option value="${e.id}" ${c?.eqId===e.id?'selected':''}>${e.name} (${e.location})</option>`).join('')}
+      </select>
     </div>
-
-    <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-top:8px;display:flex;flex-direction:column;gap:10px;">
-      <div class="form-group">
-        <label class="form-label">📸 소모품 자재 사진 업로드 (자동 압축 리사이징)</label>
-        <input type="file" id="cs-file" accept="image/*" class="form-input" style="padding:6px;" onchange="handleImageUpload(this, 'cs-img-preview', 'cs-upload-preview')">
-        ${c?.fileName?`<div style="font-size:12px;color:var(--success);margin-top:4px">✓ 등록된 파일: ${c.fileName}</div>`:''}
-      </div>
-      <div id="cs-upload-preview" style="${c?.fileData ? '' : 'display:none;'}">
-        <img id="cs-img-preview" src="${c?.fileData || ''}" style="max-width:100%;max-height:160px;border-radius:6px;object-fit:contain;background:var(--surface3);">
-      </div>
+    <div class="form-grid form-grid-2">
+      <div class="form-group"><label class="form-label">교체 주기 (일 단위) *</label><input class="form-input" type="number" id="cs-cycle" value="${c?c.cycle:90}"></div>
+      <div class="form-group"><label class="form-label">최근 교체일 *</label><input class="form-input" type="date" id="cs-lastDate" value="${c?c.lastDate:today()}"></div>
     </div>
   `;
   document.getElementById('modal-footer').innerHTML = `
@@ -1010,86 +709,62 @@ function openConsModal(id) {
   `;
   openModal();
 }
+
 function saveCons(id) {
   const name = document.getElementById('cs-name').value.trim();
+  const eqId = document.getElementById('cs-eqId').value;
   const cycle = document.getElementById('cs-cycle').value;
-  if(!name||!cycle) { alert('소모품명과 교체주기는 필수입니다.'); return; }
+  const lastDate = document.getElementById('cs-lastDate').value;
+  if(!name || !eqId || !cycle || !lastDate) { alert('필수 항목들을 채워주세요.'); return; }
 
-  const fileInput = document.getElementById('cs-file');
-  const resizedData = fileInput.getAttribute('data-resized');
-  const fileName = fileInput.getAttribute('data-filename');
-  const existing = id ? getCons().find(c=>c.id===id) : null;
+  const data = { id: id || 'CS'+String(Date.now()).slice(-3), name, eqId, cycle:parseInt(cycle), lastDate };
+  let list = getCons();
+  if(id) list = list.map(x=>x.id===id?data:x);
+  else list.push(data);
 
-  const data = {
-    id:id||'CS'+String(Date.now()).slice(-6),
-    name, eqId:document.getElementById('cs-eq').value,
-    cycle:parseInt(cycle), lastDate:document.getElementById('cs-last').value,
-    fileData: resizedData || existing?.fileData || null,
-    fileName: fileName || existing?.fileName || null
-  };
-  let cons = getCons();
-  if(id) cons = cons.map(c=>c.id===id?data:c);
-  else cons.push(data);
-  
-  try {
-    DB.set('consumable', cons);
-  } catch(e) {
-    alert('저장 용량 초과입니다. 다른 사진을 이용하거나 파일 크기를 조절해 주세요.');
-    return;
-  }
-  closeModal(); renderConsumable(); updateBadges();
+  DB.set('consumable', list);
+  closeModal();
+  updateBadges();
+  renderConsumable();
 }
 
 /* ════════════════════════════════════
-   5. LEGAL (법정점검) - 일단위 알람 방식으로 단순화
+   5. COMPLIANCE / LEGAL MANAGEMENT
 ════════════════════════════════════ */
-function renderLegal(filter='') {
-  let legal = getLegal();
-  const enriched = legal.map(l => ({
-    ...l, next:nextDate(l.lastDate, l.cycle), d:dday(nextDate(l.lastDate, l.cycle))
-  })).sort((a,b)=>a.d-b.d);
-  
-  const filtered = filter ? enriched.filter(l=>l.area.includes(filter)||l.title.includes(filter)) : enriched;
-
+function renderLegal() {
+  const legal = getLegal();
   document.getElementById('topbar-actions').innerHTML = `
-    <button class="btn btn-primary" onclick="openLegalModal()">+ 법정점검 등록</button>
+    <button class="btn btn-primary" onclick="openLegalModal()">+ 법정 항목 등록</button>
   `;
   document.getElementById('content').innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border2);border-left:4px solid var(--warn);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--text2);">
-      ⚙️ <strong>법정점검 주기 관리</strong> — 점검 주기를 일단위 일수로 지정하여 만료 전 만료 알림(D-Day)을 직관적으로 확인합니다.
-    </div>
-    <div class="filter-bar">
-      <div class="search-bar">
-        <span>🔍</span>
-        <input type="text" placeholder="점검 항목, 구역 검색..." onkeyup="renderLegal(this.value)" value="${filter}">
-      </div>
-      <span class="tag">${filtered.length}건</span>
-      <span class="tag" style="background:var(--danger-dim);color:var(--danger)">임박(D-30이하) ${filtered.filter(l=>l.d<=30).length}건</span>
-    </div>
+    <div class="filter-bar"><span class="tag">법정 관리 기준 ${legal.length}건</span></div>
     <div class="card">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>점검 항목(명칭)</th><th>구역(연구실)</th><th>점검 주기</th><th>최근 실시일</th><th>다음 예정일</th><th>만료 알람</th><th>결과보고서</th><th>비고</th><th>관리</th></tr></thead>
+          <thead><tr><th>점검 항목명</th><th>대상 구역</th><th>법정 주기</th><th>최근 점검일</th><th>차기 예정일</th><th>상태</th><th>비고</th><th>관리</th></tr></thead>
           <tbody>
-          ${filtered.length===0?'<tr><td colspan="9" class="empty">등록된 법정점검 없음</td></tr>':
-            filtered.map(l=>`<tr>
-              <td class="bold">${l.title}</td>
-              <td>${l.area}</td>
-              <td style="font-family:var(--mono)">${l.cycle}일 주기</td>
-              <td style="font-family:var(--mono);font-size:12px">${l.lastDate}</td>
-              <td style="font-family:var(--mono);font-size:12px">${l.next}</td>
-              <td>${ddayBadge(l.d)}</td>
-              <td style="font-size:12px">${l.report?`<span style="color:var(--success)">📄 ${l.report}</span>`:'<span style="color:var(--text3)">미등록</span>'}</td>
-              <td style="font-size:12px;color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.note}">${l.note||'-'}</td>
-              <td>
-                <div style="display:flex;gap:4px;">
-                  <button class="btn btn-success btn-sm" onclick="completeLegal('${l.id}')">✓ 완료</button>
-                  <button class="btn btn-ghost btn-sm" onclick="openLegalModal('${l.id}')">수정</button>
-                  <button class="btn btn-danger btn-sm" onclick="delLegal('${l.id}')">삭제</button>
-                </div>
-              </td>
-            </tr>`).join('')
-          }
+            ${legal.length===0?'<tr><td colspan="8" class="empty">등록된 법정 관리 항목이 없습니다.</td></tr>':
+              legal.map(l=>{
+                const next = nextDate(l.lastDate, l.cycle);
+                const d = dday(next);
+                return `<tr>
+                  <td class="bold">${l.title}</td>
+                  <td>${l.area}</td>
+                  <td style="font-family:var(--mono); font-size:12px;">${l.cycle===1?'매일':l.cycle===30?'매월':l.cycle===180?'반기':'주기 '+l.cycle+'일'}</td>
+                  <td style="font-family:var(--mono); font-size:12px;">${l.lastDate}</td>
+                  <td style="font-family:var(--mono); font-size:12px;">${next}</td>
+                  <td>${ddayBadge(d)}</td>
+                  <td style="font-size:12px; color:var(--text2); max-width:180px;">${l.note||'-'}</td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <button class="btn btn-success btn-sm" onclick="checkLegal('${l.id}')">점검완료</button>
+                      <button class="btn btn-ghost btn-sm" onclick="openLegalModal('${l.id}')">수정</button>
+                      <button class="btn btn-danger btn-sm" onclick="delLegal('${l.id}')">삭제</button>
+                    </div>
+                  </td>
+                </tr>`;
+              }).join('')
+            }
           </tbody>
         </table>
       </div>
@@ -1097,47 +772,43 @@ function renderLegal(filter='') {
   `;
 }
 
-function completeLegal(id) {
-  let legal = getLegal();
-  legal = legal.map(l => l.id===id ? {...l, lastDate:today()} : l);
-  DB.set('legal', legal);
-  renderLegal(); updateBadges();
+function checkLegal(id) {
+  if(!confirm('금일 시점으로 법정점검 완료를 갱신하시겠습니까?')) return;
+  let list = getLegal();
+  list = list.map(l => l.id===id ? {...l, lastDate:today()} : l);
+  DB.set('legal', list);
+  updateBadges();
+  renderLegal();
 }
+
 function delLegal(id) {
   if(!confirm('삭제하시겠습니까?')) return;
   DB.set('legal', getLegal().filter(l=>l.id!==id));
-  renderLegal(); updateBadges();
+  updateBadges();
+  renderLegal();
 }
+
 function openLegalModal(id) {
-  const l = id ? getLegal().find(l=>l.id===id) : null;
-  document.getElementById('modal-title').textContent = l ? '법정점검 수정' : '법정점검 등록';
+  const l = id ? getLegal().find(x=>x.id===id) : null;
+  document.getElementById('modal-title').textContent = l ? '법정 점검 항목 수정' : '법정 점검 항목 등록';
   document.getElementById('modal-body').innerHTML = `
+    <div class="form-group"><label class="form-label">법정 점검 항목명 *</label><input class="form-input" id="lg-title" placeholder="예: 정기안전점검(반기), 일상점검" value="${l?l.title:''}"></div>
+    <div class="form-group"><label class="form-label">대상 구역 *</label><input class="form-input" id="lg-area" placeholder="예: 5층 전체, 연구소 B구역" value="${l?l.area:''}"></div>
     <div class="form-grid form-grid-2">
-      <div class="form-group" style="grid-column:1/-1">
-        <label class="form-label">점검 항목 명칭 *</label>
-        <input class="form-input" id="lg-title" placeholder="예) 일상점검, 정기안전점검, 소방점검" value="${l?.title||''}">
-      </div>
-      <div class="form-group" style="grid-column:1/-1">
-        <label class="form-label">구역(연구실명) *</label>
-        <input class="form-input" id="lg-area" placeholder="예) 5층-A구역 실험실" value="${l?.area||''}">
-      </div>
       <div class="form-group">
-        <label class="form-label">점검 주기 (일수 단위 숫자 입력) *</label>
-        <input class="form-input" type="number" id="lg-cycle" placeholder="예) 매일=1, 반기=180, 1년=365, 2년=730" value="${l?.cycle||180}">
+        <label class="form-label">점검 주기 선택 *</label>
+        <select class="form-select" id="lg-cycle-sel" onchange="document.getElementById('lg-cycle').value=this.value">
+          <option value="1" ${l?.cycle===1?'selected':''}>매일 (1일)</option>
+          <option value="30" ${l?.cycle===30?'selected':''}>매월 (30일)</option>
+          <option value="180" ${l?.cycle===180?'selected':''}>반기 (180일)</option>
+          <option value="365" ${l?.cycle===365?'selected':''}>매년 (365일)</option>
+          <option value="730" ${l?.cycle===730?'selected':''}>2년 주기 (730일)</option>
+        </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">최근 실시일 *</label>
-        <input class="form-input" type="date" id="lg-last" value="${l?.lastDate||today()}">
-      </div>
-      <div class="form-group" style="grid-column:1/-1">
-        <label class="form-label">결과 보고서 파일명 또는 URL</label>
-        <input class="form-input" id="lg-report" placeholder="예) report_5A_20260501.pdf" value="${l?.report||''}">
-      </div>
-      <div class="form-group" style="grid-column:1/-1">
-        <label class="form-label">비고</label>
-        <textarea class="form-textarea" id="lg-note" style="min-height:60px">${l?.note||''}</textarea>
-      </div>
+      <div class="form-group"><label class="form-label">직접입력 주기(일수)</label><input class="form-input" type="number" id="lg-cycle" value="${l?l.cycle:1}"></div>
     </div>
+    <div class="form-group"><label class="form-label">최근 법정 점검일 *</label><input class="form-input" type="date" id="lg-lastDate" value="${l?l.lastDate:today()}"></div>
+    <div class="form-group"><label class="form-label">지정 비고 설명</label><input class="form-input" id="lg-note" placeholder="관련 근거 법령, 유의점 등 명시" value="${l?l.note||'':''}"></div>
   `;
   document.getElementById('modal-footer').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal()">취소</button>
@@ -1145,232 +816,122 @@ function openLegalModal(id) {
   `;
   openModal();
 }
+
 function saveLegal(id) {
   const title = document.getElementById('lg-title').value.trim();
   const area = document.getElementById('lg-area').value.trim();
   const cycle = document.getElementById('lg-cycle').value;
-  
-  if(!title || !area || !cycle) { alert('점검 항목 명칭, 구역, 점검 주기는 필수 입력 사항입니다.'); return; }
-  
-  const data = {
-    id:id||'LG'+String(Date.now()).slice(-6),
-    title, area, 
-    cycle: parseInt(cycle),
-    lastDate:document.getElementById('lg-last').value,
-    report:document.getElementById('lg-report').value.trim(),
-    note:document.getElementById('lg-note').value.trim()
-  };
-  let legal = getLegal();
-  if(id) legal = legal.map(l=>l.id===id?data:l);
-  else legal.push(data);
-  DB.set('legal', legal);
-  closeModal(); renderLegal(); updateBadges();
+  const lastDate = document.getElementById('lg-lastDate').value;
+  if(!title || !area || !cycle || !lastDate) { alert('필무 명칭들을 모두 기입바랍니다.'); return; }
+
+  const data = { id: id || 'LG'+String(Date.now()).slice(-3), title, area, cycle:parseInt(cycle), lastDate, note:document.getElementById('lg-note').value.trim(), report:'' };
+  let list = getLegal();
+  if(id) list = list.map(x=>x.id===id?data:x);
+  else list.push(data);
+
+  DB.set('legal', list);
+  closeModal();
+  updateBadges();
+  renderLegal();
 }
 
 /* ════════════════════════════════════
-   6. DRAWING (도면 관리)
+   6. DRAWING MANAGEMENT (도면 관리)
 ════════════════════════════════════ */
 function getDrawings() { return DB.load('drawings', []); }
 
-function renderDrawing(floorFilter='', typeFilter='') {
-  let drawings = getDrawings();
-  if(floorFilter) drawings = drawings.filter(d=>d.floor===floorFilter);
-  if(typeFilter) drawings = drawings.filter(d=>d.type===typeFilter);
-
-  const floors = [...new Set(getDrawings().map(d=>d.floor))];
-  const types = [...new Set(getDrawings().map(d=>d.type))];
-
+function renderDrawing() {
+  const drawings = getDrawings();
   document.getElementById('topbar-actions').innerHTML = `
-    <button class="btn btn-primary" onclick="openDrawingModal()">+ 도면 등록</button>
+    <button class="btn btn-primary" onclick="openDwModal()">+ 도면 등록</button>
   `;
   document.getElementById('content').innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border2);border-left:4px solid var(--primary);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--text2);">
-      📐 <strong>도면 관리</strong> — 구글 드라이브 링크 저장 또는 이미지/PDF 직접 업로드를 모두 지원합니다.
-    </div>
-    <div class="filter-bar">
-      <select class="form-select" style="width:auto;padding:7px 12px" onchange="renderDrawing(this.value,'${typeFilter}')">
-        <option value="">전체 층/구역</option>
-        ${floors.map(f=>`<option ${floorFilter===f?'selected':''}>${f}</option>`).join('')}
-      </select>
-      <select class="form-select" style="width:auto;padding:7px 12px" onchange="renderDrawing('${floorFilter}',this.value)">
-        <option value="">전체 유형</option>
-        ${types.map(t=>`<option ${typeFilter===t?'selected':''}>${t}</option>`).join('')}
-      </select>
-      <span class="tag">${drawings.length}건</span>
-    </div>
-
-    <div class="grid grid-3" id="drawing-grid">
-      ${drawings.length===0
-        ? '<div class="card" style="grid-column:1/-1"><div class="empty">등록된 도면이 없습니다</div></div>'
-        : drawings.map(d=>drawingCard(d)).join('')
-      }
-    </div>
-  `;
-}
-
-function drawingCard(d) {
-  const typeColor = {'평면도':'badge-blue','계통도':'badge-purple','소방도':'badge-danger','전기도':'badge-warn','기타':'badge-gray'};
-  const preview = d.fileData && d.fileData.startsWith('data:image')
-    ? `<div style="height:160px;background:var(--surface3);border-radius:6px;overflow:hidden;margin-bottom:14px;cursor:pointer" onclick="previewDrawing('${d.id}')">
-        <img src="${d.fileData}" style="width:100%;height:100%;object-fit:contain;" alt="${d.title}">
-       </div>`
-    : d.fileData && d.fileData.startsWith('data:application/pdf')
-    ? `<div style="height:160px;background:var(--surface3);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;cursor:pointer" onclick="previewDrawing('${d.id}')">
-        <span style="font-size:40px">📄</span>
-        <span style="font-size:12px;color:var(--text2)">${d.fileName||'PDF 파일'}</span>
-        <span style="font-size:11px;color:var(--primary)">클릭하여 열기</span>
-       </div>`
-    : `<div style="height:160px;background:var(--surface3);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;${d.linkUrl?'cursor:pointer':''}" ${d.linkUrl?`onclick="window.open('${d.linkUrl}','_blank')"`:''}>
-        <span style="font-size:36px">📐</span>
-        ${d.linkUrl?'<span style="font-size:11px;color:var(--primary)">🔗 클릭하여 열기</span>':'<span style="font-size:11px;color:var(--text3)">파일 없음</span>'}
-       </div>`;
-  return `
-    <div class="card card-sm" style="display:flex;flex-direction:column;">
-      ${preview}
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">
-        <div class="bold" style="font-size:14px;color:var(--text);line-height:1.3">${d.title}</div>
-        <span class="badge ${typeColor[d.type]||'badge-gray'}" style="flex-shrink:0">${d.type}</span>
-      </div>
-      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-        <span class="tag">${d.floor}</span>
-        <span class="tag">${d.area}</span>
-      </div>
-      ${d.note?`<div style="font-size:12px;color:var(--text3);margin-bottom:8px;line-height:1.5">${d.note}</div>`:''}
-      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;font-family:var(--mono)">수정: ${d.updated}</div>
-      <div style="display:flex;gap:6px;margin-top:auto;">
-        ${d.linkUrl?`<button class="btn btn-ghost btn-sm" style="flex:1" onclick="window.open('${d.linkUrl}','_blank')">🔗 링크 열기</button>`:''}
-        <button class="btn btn-ghost btn-sm" onclick="openDrawingModal('${d.id}')">수정</button>
-        <button class="btn btn-danger btn-sm" onclick="delDrawing('${d.id}')">삭제</button>
+    <div class="filter-bar"><span class="tag">등록 도면 ${drawings.length}건</span></div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>층</th><th>구역/구분</th><th>도면 정보 요약</th><th>형태</th><th>최종 수정일</th><th>다운로드/링크</th><th>관리</th></tr></thead>
+          <tbody>
+            ${drawings.length===0?'<tr><td colspan="7" class="empty">등록된 도면 자료가 없습니다.</td></tr>':
+              drawings.map(d=>`<tr>
+                <td class="bold">${d.floor}</td>
+                <td><span class="badge badge-purple">${d.type}</span></td>
+                <td class="bold">${d.title} ${d.note ? `<div style="font-size:11px;font-weight:400;color:var(--text3);margin-top:2px;">${d.note}</div>`:''}</td>
+                <td>${d.area||'전체'}</td>
+                <td style="font-family:var(--mono); font-size:12px;">${d.updated||'-'}</td>
+                <td>
+                  ${d.fileData ? `<a href="${d.fileData}" download="${d.fileName||'drawing.png'}" class="btn btn-ghost btn-sm" style="color:var(--success)">💾 파일 받기</a>` : ''}
+                  ${d.linkUrl ? `<a href="${d.linkUrl}" target="_blank" class="btn btn-ghost btn-sm" style="color:var(--purple)">🔗 외부 링크</a>` : ''}
+                </td>
+                <td>
+                  <div style="display:flex;gap:4px;">
+                    <button class="btn btn-ghost btn-sm" onclick="openDwModal('${d.id}')">수정</button>
+                    <button class="btn btn-danger btn-sm" onclick="delDw('${d.id}')">삭제</button>
+                  </div>
+                </td>
+              </tr>`).join('')
+            }
+          </tbody>
+        </table>
       </div>
     </div>
   `;
 }
 
-function previewDrawing(id) {
-  const d = getDrawings().find(d=>d.id===id);
-  if(!d) return;
-  if(d.fileData && d.fileData.startsWith('data:application/pdf')) {
-    const blob = dataURLtoBlob(d.fileData);
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-    return;
-  }
-  if(d.fileData && d.fileData.startsWith('data:image')) {
-    document.getElementById('modal-title').textContent = d.title;
-    document.getElementById('modal-body').innerHTML = `
-      <img src="${d.fileData}" style="width:100%;border-radius:6px;" alt="${d.title}">
-    `;
-    document.getElementById('modal-footer').innerHTML = `
-      <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
-    `;
-    openModal();
-  }
-}
-
-function dataURLtoBlob(dataURL) {
-  const arr = dataURL.split(','), mime = arr[0].match(/:(.*?);/)[1];
-  const bstr = atob(arr[1]); let n = bstr.length; const u8 = new Uint8Array(n);
-  while(n--) u8[n] = bstr.charCodeAt(n);
-  return new Blob([u8], {type:mime});
-}
-
-function delDrawing(id) {
-  if(!confirm('삭제하시겠습니까?')) return;
+function delDw(id) {
+  if(!confirm('도면 설정을 지우시겠습니까?')) return;
   DB.set('drawings', getDrawings().filter(d=>d.id!==id));
   renderDrawing();
 }
 
-function openDrawingModal(id) {
-  const d = id ? getDrawings().find(d=>d.id===id) : null;
-  const drawingTypes = ['평면도','계통도','소방도','전기도','가스도','기타'];
-  document.getElementById('modal-title').textContent = d ? '도면 수정' : '도면 등록';
+function openDwModal(id) {
+  const d = id ? getDrawings().find(x=>x.id===id) : null;
+  document.getElementById('modal-title').textContent = d ? '도면 정보 수정' : '도면 등록';
   document.getElementById('modal-body').innerHTML = `
     <div class="form-grid form-grid-2">
-      <div class="form-group" style="grid-column:1/-1">
-        <label class="form-label">도면 제목 *</label>
-        <input class="form-input" id="dw-title" placeholder="예) 5층 전체 평면도" value="${d?.title||''}">
-      </div>
+      <div class="form-group"><label class="form-label">도면 명칭 *</label><input class="form-input" id="dw-title" placeholder="예: 5층 배기 덕트 계통도" value="${d?d.title:''}"></div>
+      <div class="form-group"><label class="form-label">해당 층 *</label><input class="form-input" id="dw-floor" placeholder="예: 5층, 옥상" value="${d?d.floor:'5층'}"></div>
+    </div>
+    <div class="form-grid form-grid-2">
       <div class="form-group">
-        <label class="form-label">층/구역 *</label>
-        <input class="form-input" id="dw-floor" placeholder="예) 5층, B1층" value="${d?.floor||''}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">세부 구역</label>
-        <input class="form-input" id="dw-area" placeholder="예) 전체, A구역, 전기실" value="${d?.area||''}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">도면 유형</label>
+        <label class="form-label">도면 분류</label>
         <select class="form-select" id="dw-type">
-          ${drawingTypes.map(t=>`<option ${d?.type===t?'selected':''}>${t}</option>`).join('')}
+          <option value="공조/덕트" ${d?.type==='공조/덕트'?'selected':''}>공조/덕트</option>
+          <option value="소방" ${d?.type==='소방'?'selected':''}>소방</option>
+          <option value="전기" ${d?.type==='전기'?'selected':''}>전기</option>
+          <option value="건축/평면" ${d?.type==='건축/평면'?'selected':''}>건축/평면</option>
+          <option value="기타" ${d?.type==='기타'?'selected':''}>기타</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">수정일</label>
-        <input class="form-input" type="date" id="dw-updated" value="${d?.updated||today()}">
-      </div>
+      <div class="form-group"><label class="form-label">세부 구역</label><input class="form-input" id="dw-area" placeholder="예: 연구실 B구역, 전체" value="${d?d.area||'':''}"></div>
     </div>
-
-    <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:166px;display:flex;flex-direction:column;gap:12px;padding:14px;">
-      <div style="font-size:12px;font-weight:600;color:var(--text2)">📎 파일 첨부 (둘 중 하나 또는 둘 다)</div>
-
-      <div class="form-group">
-        <label class="form-label">🔗 구글 드라이브 / 외부 링크 URL</label>
-        <input class="form-input" id="dw-link" placeholder="https://drive.google.com/..." value="${d?.linkUrl||''}">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">📁 파일 직접 업로드 (이미지 JPG·PNG 또는 PDF, 5MB 이하)</label>
-        <input type="file" id="dw-file" accept="image/*,application/pdf" class="form-input" style="padding:6px;" onchange="previewUpload(this)">
-        ${d?.fileName?`<div style="font-size:12px;color:var(--success);margin-top:4px">✓ 현재 파일: ${d.fileName}</div>`:''}
-      </div>
-      <div id="upload-preview" style="display:none">
-        <img id="upload-img-preview" style="max-width:100%;max-height:200px;border-radius:6px;object-fit:contain;background:var(--surface3);display:none">
-        <div id="upload-pdf-preview" style="display:none;padding:12px;background:var(--surface3);border-radius:6px;text-align:center;color:var(--text2);font-size:13px">📄 PDF 파일 선택됨</div>
-      </div>
-    </div>
-
+    <div class="form-group"><label class="form-label">클라우드/NAS 주소 (선택 링크)</label><input class="form-input" type="url" id="dw-link" placeholder="https://..." value="${d?d.linkUrl||'':''}"></div>
+    <div class="form-group"><label class="form-label">최종 개정일</label><input class="form-input" type="date" id="dw-updated" value="${d?d.updated:today()}"></div>
+    <div class="form-group"><label class="form-label">상세 비고 설명</label><input class="form-input" id="dw-note" value="${d?d.note||'':''}"></div>
     <div class="form-group">
-      <label class="form-label">비고</label>
-      <textarea class="form-textarea" id="dw-note" style="min-height:60px">${d?.note||''}</textarea>
+      <label class="form-label">도면 파일 이미지 첨부 (5MB 미만)</label>
+      <input type="file" id="dw-file-input" class="form-input">
     </div>
   `;
   document.getElementById('modal-footer').innerHTML = `
     <button class="btn btn-ghost" onclick="closeModal()">취소</button>
-    <button class="btn btn-primary" onclick="saveDrawing('${id||''}')">저장</button>
+    <button class="btn btn-primary" onclick="saveDw('${id||''}')">저장</button>
   `;
   openModal();
 }
 
-function previewUpload(input) {
-  const file = input.files[0];
-  if(!file) return;
-  const preview = document.getElementById('upload-preview');
-  const imgPrev = document.getElementById('upload-img-preview');
-  const pdfPrev = document.getElementById('upload-pdf-preview');
-  preview.style.display = 'block';
-  if(file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = e => { imgPrev.src=e.target.result; imgPrev.style.display='block'; pdfPrev.style.display='none'; };
-    reader.readAsDataURL(file);
-  } else {
-    imgPrev.style.display='none';
-    pdfPrev.style.display='block';
-    pdfPrev.textContent = `📄 ${file.name}`;
-  }
-}
-
-function saveDrawing(id) {
+function saveDw(id) {
   const title = document.getElementById('dw-title').value.trim();
   const floor = document.getElementById('dw-floor').value.trim();
-  if(!title||!floor) { alert('제목과 층/구역은 필수입니다.'); return; }
+  if(!title || !floor) { alert('도면 명칭과 해당 층은 필수 영역입니다.'); return; }
 
-  const fileInput = document.getElementById('dw-file');
+  const fileInput = document.getElementById('dw-file-input');
   const file = fileInput.files[0];
-  const existing = id ? getDrawings().find(d=>d.id===id) : null;
+  const existing = id ? getDrawings().find(x=>x.id===id) : null;
 
   function doSave(fileData, fileName) {
     const data = {
-      id: id||'DW'+String(Date.now()).slice(-6),
+      id: id || 'DW'+String(Date.now()).slice(-6),
       title, floor, area: document.getElementById('dw-area').value.trim(),
       type: document.getElementById('dw-type').value,
       linkUrl: document.getElementById('dw-link').value.trim(),
@@ -1400,24 +961,38 @@ function saveDrawing(id) {
   }
 }
 
-function switchTab(tab) {
-  currentTab = tab;
-  const items = document.querySelectorAll('.nav-item, .bnav-item');
-  items.forEach(el => {
-    if(el.getAttribute('data-tab') === tab || el.getAttribute('data-btab') === tab) el.classList.add('active');
+/* ════════════════════════════════════
+   CORE APP VIEW NAVIGATION CONTROLLER
+════════════════════════════════════ */
+let currentTab = 'dashboard';
+
+function switchTab(tabId) {
+  currentTab = tabId;
+  
+  // 사이드바 액티브 제어
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if(el.getAttribute('data-tab') === tabId) el.classList.add('active');
     else el.classList.remove('active');
   });
 
-  const titles = {dashboard:'대시보드', equipment:'장비 목록', history:'점검/수리 이력', consumable:'소모품 관리', legal:'법정점검 관리', drawing:'도면 관리'};
-  document.getElementById('page-title').textContent = titles[tab] || '관리 시스템';
+  // 모바일 하단 탭바 액티브 제어
+  document.querySelectorAll('.bnav-item').forEach(el => {
+    if(el.getAttribute('data-btab') === tabId) el.classList.add('active');
+    else el.classList.remove('active');
+  });
 
-  if(tab === 'dashboard') renderDashboard();
-  else if(tab === 'equipment') renderEquipment();
-  else if(tab === 'history') renderHistory();
-  else if(tab === 'consumable') renderConsumable();
-  else if(tab === 'legal') renderLegal();
-  else if(tab === 'drawing') renderDrawing();
+  // 상단 타이틀 갱신 및 레이아웃 바인딩 호출
+  const titles = { dashboard: '대시보드 종합현황', equipment: '시설 장비 등록대장', history: '점검/수리 통합 실무이력', consumable: '소모품 교체 주기 관리', legal: '법정의무점검 진단관리', drawing: '시설 도면 자료실' };
+  document.getElementById('page-title').textContent = titles[tabId] || '종합 정보';
 
+  if (tabId === 'dashboard') renderDashboard();
+  else if (tabId === 'equipment') renderEquipment();
+  else if (tabId === 'history') renderHistory();
+  else if (tabId === 'consumable') renderConsumable();
+  else if (tabId === 'legal') renderLegal();
+  else if (tabId === 'drawing') renderDrawing();
+
+  // 뱃지 상태 실시간 카운트 리액션 반영
   updateBadges();
 }
 
@@ -1432,7 +1007,7 @@ function openModal() {
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.add('show');
   
-  // 마우스/터치 다운 시점의 타겟 저장 (드래그 시 창 닫힘 완천 차단)
+  // 마우스/터치 다운 시점의 타겟 저장 (드래그 시 창 닫힘 완전 차단)
   overlay.onmousedown = function(e) {
     modalMouseDownTarget = e.target;
   };
@@ -1459,22 +1034,11 @@ function closeModal() {
 // 2. 배경 클릭 시 창 닫기 함수 (정밀 타겟 판정)
 function closeModalOnBg(e) {
   const overlay = document.getElementById('modal-overlay');
-  
-  // 마우스를 처음 누른 곳(mousedown)과 뗀 곳(mouseup)이 모두 순수 배경일 때만 닫기
+  // mousedown 타겟과 mouseup 타겟이 모두 overlay 배경일 때만 안전하게 닫기 수행
   if (e.target === overlay && modalMouseDownTarget === overlay) {
-    
-    // 모달 컨텐츠 내부 영역을 드래그하다가 바깥으로 삐져나간 경우는 무시
-    const modalContent = document.getElementById('modal');
-    if (modalContent && modalContent.contains(e.target)) return;
-    
     closeModal();
   }
 }
-
-// 초기 데이터 동기화 구동
-syncAllFromServer().then(() => {
-  initData();
-});
 </script>
 </body>
 </html>
