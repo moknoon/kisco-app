@@ -39,7 +39,7 @@ body { bg: var(--bg); color: var(--text); display: flex; height: 100vh; overflow
 .auth-desc { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
 #g-login-btn { display: inline-block; margin-top: 10px; }
 
-/* 메인 레이아웃 및 기존 UI 스타일 유지 (지면 관계상 핵심 유지보수 축약, 원본 테마 완벽 동일) */
+/* 사이드바 & 레이아웃 */
 #sidebar { width: 240px; bg: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; }
 .sb-header { padding: 20px 16px; border-bottom: 1px solid var(--surface3); }
 .sb-title { font-size: 15px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 6px; }
@@ -58,7 +58,6 @@ body { bg: var(--bg); color: var(--text); display: flex; height: 100vh; overflow
 #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; bg: var(--bg); position: relative; }
 #main-header { height: 56px; bg: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 9; }
 #page-title { font-size: 16px; font-weight: 700; color: var(--primary); }
-.header-right { display: flex; align-items: center; gap: 12px; }
 #sync-indicator { font-size: 12px; font-weight: 500; color: var(--text3); display: flex; align-items: center; gap: 4px; }
 #sync-indicator.syncing { color: var(--purple); animation: blink 1s infinite alternate; }
 
@@ -66,7 +65,30 @@ body { bg: var(--bg); color: var(--text); display: flex; height: 100vh; overflow
 .view-panel { display: none; }
 .view-panel.active { display: block; }
 
-/* 하단 바 (모바일 전용 화면) */
+/* 공통 테이블 및 UI 요소 */
+.card { bg: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+.section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+.f-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.f-group { flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 4px; }
+.f-group label { font-size: 12px; font-weight: 600; color: var(--text2); }
+.f-group input, .f-group select, .f-group textarea { padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; outline: none; bg: #fff; }
+.f-group input:focus, .f-group select:focus { border-color: var(--primary); }
+.btn { padding: 8px 14px; font-size: 13px; font-weight: 500; border-radius: var(--radius); border: 1px solid var(--border); bg: var(--surface2); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: var(--transition); }
+.btn:hover { bg: var(--surface3); }
+.btn.primary { bg: var(--primary); border-color: var(--primary); color: #fff; }
+.btn.primary:hover { opacity: 0.9; }
+.btn.danger { bg: var(--danger-dim); border-color: var(--danger); color: var(--danger); }
+.tbl-wrap { overflow-x: auto; margin-top: 10px; border: 1px solid var(--border); border-radius: var(--radius); }
+table { width: 100%; border-collapse: collapse; text-align: left; bg: #fff; font-size: 13px; }
+th { bg: var(--surface2); color: var(--text2); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--surface3); color: var(--text); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+.badge { display: inline-block; padding: 2px 6px; font-size: 11px; font-weight: 600; border-radius: 4px; }
+.badge.success { bg: var(--success-dim); color: var(--success); }
+.badge.warn { bg: var(--warn-dim); color: var(--warn); }
+.badge.danger { bg: var(--danger-dim); color: var(--danger); }
+
+/* 하단 바 (모바일) */
 #bottom-nav { position: fixed; bottom: 0; left: 0; width: 100vw; height: 56px; bg: var(--surface); border-top: 1px solid var(--border); display: none; justify-content: space-around; align-items: center; z-index: 100; transition: opacity 0.15s ease, pointer-events 0.15s ease; }
 .bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text2); text-decoration: none; font-size: 10px; font-weight: 500; position: relative; cursor: pointer; }
 .bnav-item.active { color: var(--primary); font-weight: 700; }
@@ -75,10 +97,10 @@ body { bg: var(--bg); color: var(--text); display: flex; height: 100vh; overflow
 .bnav-badge.warn { bg: var(--warn-dim); color: var(--warn); }
 .bnav-badge.danger { bg: var(--danger-dim); color: var(--danger); }
 
-/* 모달 및 기존 컴포넌트 스타일 생략 없이 완벽 구현 구조 유지 */
+/* 모달 레이어 */
 #modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; bg: rgba(0,0,0,0.4); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
 #modal-overlay.show { opacity: 1; pointer-events: all; }
-.modal-window { bg: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); width: 480px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+.modal-window { bg: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); width: 520px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
 .modal-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .modal-title { font-size: 15px; font-weight: 700; color: var(--primary); }
 .modal-close { font-size: 20px; color: var(--text3); cursor: pointer; border: none; bg: none; }
@@ -112,30 +134,66 @@ body { bg: var(--bg); color: var(--text); display: flex; height: 100vh; overflow
     <div id="user-email-display" class="sb-user">인증 대기 중...</div>
   </div>
   <div class="sb-nav">
-    <div class="nav-item active" data-tab="dashboard"><div class="nav-left">📊<span>대시보드 현황</span></div></div>
-    <div class="nav-item" data-tab="equipment"><div class="nav-left">⚙️<span>장비 등록대장</span></div></div>
-    <div class="nav-item" data-tab="history"><div class="nav-left">📝<span>점검/수리 이력</span></div></div>
-    <div class="nav-item" data-tab="consumable"><div class="nav-left">🔄<span>소모품 주기</span></div><span id="badge-consumable" class="nav-badge danger">0</span></div>
-    <div class="nav-item" data-tab="legal"><div class="nav-left">⚖️<span>법정의무 점검</span></div><span id="badge-legal" class="nav-badge warn">0</span></div>
-    <div class="nav-item" data-tab="drawing"><div class="nav-left">📁<span>시설 도면실</span></div></div>
+    <div class="nav-item active" data-tab="dashboard"><div class="nav-left">📊<span>대시보드 종합현황</span></div></div>
+    <div class="nav-item" data-tab="equipment"><div class="nav-left">⚙️<span>시설 장비 등록대장</span></div></div>
+    <div class="nav-item" data-tab="history"><div class="nav-left">📝<span>점검/수리 통합실무</span></div></div>
+    <div class="nav-item" data-tab="consumable"><div class="nav-left">🔄<span>소모품 교체주기</span></div><span id="badge-consumable" class="nav-badge danger">0</span></div>
+    <div class="nav-item" data-tab="legal"><div class="nav-left">⚖️<span>법정의무점검 관리</span></div><span id="badge-legal" class="nav-badge warn">0</span></div>
+    <div class="nav-item" data-tab="drawing"><div class="nav-left">📁<span>시설 도면 자료실</span></div></div>
   </div>
 </div>
 
 <div id="main-content">
   <div id="main-header">
     <div id="page-title">대시보드 종합현황</div>
-    <div class="header-right">
-      <div id="sync-indicator">● 동기화 완료</div>
-    </div>
+    <div><div id="sync-indicator">● 동기화 완료</div></div>
   </div>
   
   <div id="view-container">
-    <div id="view-dashboard" class="view-panel active"></div>
-    <div id="view-equipment" class="view-panel"></div>
-    <div id="view-history" class="view-panel"></div>
-    <div id="view-consumable" class="view-panel"></div>
-    <div id="view-legal" class="view-panel"></div>
-    <div id="view-drawing" class="view-panel"></div>
+    <div id="view-dashboard" class="view-panel active">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:20px;" id="db-cards"></div>
+      <div class="card">
+        <div class="section-title">⚠️ 알림 및 긴급 조치 대상</div>
+        <div class="tbl-wrap"><table><thead><tr><th>분류</th><th>대상 항목</th><th>상태/주기</th><th>남은 일수</th></tr></thead><tbody id="db-alerts-tbody"></tbody></table></div>
+      </div>
+    </div>
+    
+    <div id="view-equipment" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <input type="text" id="eq-search" placeholder="장비명, 관리번호 검색..." style="padding:8px; border:1px solid var(--border); border-radius:var(--radius); width:240px;" oninput="renderEquipment()">
+        <button class="btn primary" onclick="openEquipmentForm()">+ 장비 신규등록</button>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>관리번호</th><th>장비명</th><th>규격/모델</th><th>설치위치</th><th>제조사/설치점</th><th>도입일자</th><th>작업</th></tr></thead><tbody id="eq-tbody"></tbody></table></div>
+    </div>
+    
+    <div id="view-history" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <input type="text" id="hi-search" placeholder="작업내용, 장비명 검색..." style="padding:8px; border:1px solid var(--border); border-radius:var(--radius); width:240px;" oninput="renderHistory()">
+        <button class="btn primary" onclick="openHistoryForm()">+ 점검/수리 기록등록</button>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>일자</th><th>장비명</th><th>구분</th><th>작업 실무 및 조치 내용</th><th>소요비용</th><th>담당자/업체</th><th>작업</th></tr></thead><tbody id="hi-tbody"></tbody></table></div>
+    </div>
+    
+    <div id="view-consumable" class="view-panel">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+        <button class="btn primary" onclick="openConsumableForm()">+ 소모품 등록</button>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>소모품명</th><th>적용장비</th><th>최근교체일</th><th>교체주기</th><th>다음교체 예정일</th><th>상태</th><th>작업</th></tr></thead><tbody id="con-tbody"></tbody></table></div>
+    </div>
+    
+    <div id="view-legal" class="view-panel">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+        <button class="btn primary" onclick="openLegalForm()">+ 법정검검 등록</button>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>점검종류(관련법)</th><th>대상 설비</th><th>최근검사일</th><th>검사주기</th><th>차기검사 예정일</th><th>상태</th><th>작업</th></tr></thead><tbody id="leg-tbody"></tbody></table></div>
+    </div>
+    
+    <div id="view-drawing" class="view-panel">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+        <button class="btn primary" onclick="openDrawingForm()">+ 도면 파일등록</button>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>도면명</th><th>층별</th><th>용도구분</th><th>면적</th><th>파일/링크</th><th>최종개정일</th><th>작업</th></tr></thead><tbody id="dw-tbody"></tbody></table></div>
+    </div>
   </div>
 </div>
 
@@ -148,7 +206,7 @@ body { bg: var(--bg); color: var(--text); display: flex; height: 100vh; overflow
   <div class="bnav-item" data-btab="drawing"><span class="bnav-icon">📁</span><span>도면실</span></div>
 </div>
 
-<div id="modal-overlay" onclick="closeModalOnBg(e)">
+<div id="modal-overlay" onclick="closeModalOnBg(event)">
   <div class="modal-window" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div id="modal-title" class="modal-title">데이터 편집</div>
@@ -156,153 +214,473 @@ body { bg: var(--bg); color: var(--text); display: flex; height: 100vh; overflow
     </div>
     <div id="modal-body" class="modal-body"></div>
     <div class="modal-footer">
-      <button style="padding:7px 14px; border:1px solid var(--border); bg:#fff; border-radius:4px; cursor:pointer;" onclick="closeModal()">취소</button>
-      <button id="modal-submit-btn" style="padding:7px 14px; bg:var(--primary); color:#fff; border:none; border-radius:4px; cursor:pointer;">저장</button>
+      <button class="btn" onclick="closeModal()">취소</button>
+      <button id="modal-submit-btn" class="btn primary">저장</button>
     </div>
   </div>
 </div>
 
 <script>
-// ⚠️ 책임님의 배포된 새 구글 앱스 스크립트 웹앱 주소로 매칭 교체
+// ⚠️ 여기에 배포하신 새로운 구글 앱스 스크립트 웹앱 주소를 넣으세요.
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbye8QRBKPdT-kPptotYi9kkVaXox8iSkyT8_3DZicF0_qW0BULmO72EQa-2Gz5DHJ6V/exec"; 
 
 let authToken = null;
 let currentTab = 'dashboard';
 
-// 1. 탭 메뉴별 한글 타이틀 및 렌더링 매핑 설정 배열 (중복 제거 핵심)
-const TAB_CONFIG = {
-  dashboard:  { title: '대시보드 종합현황', render: () => { document.getElementById('view-dashboard').innerHTML = '<p>종합 통계 및 실시간 현황 준비됨</p>'; } },
-  equipment:  { title: '시설 장비 등록대장', render: () => { /* 장비대장 리스트 렌더링 */ } },
-  history:    { title: '점검/수리 통합 실무이력', render: () => { /* 이력 리스트 렌더링 */ } },
-  consumable: { title: '소모품 교체 주기 관리', render: () => { /* 소모품 주기 렌더링 */ }, badgeKey: 'consumable', alertDays: 7 },
-  legal:      { title: '법정의무점검 진단관리', render: () => { /* 법정점검 렌더링 */ }, badgeKey: 'legal', alertDays: 30 },
-  drawing:    { title: '시설 도면 자료실', render: () => { /* 도면 리스트 렌더링 */ } }
-};
+// 날짜 유틸리티 함수군
+function dday(dateStr) {
+  if(!dateStr) return 9999;
+  const diff = new Date(dateStr) - new Date();
+  return Math.ceil(diff / (1000*60*60*24));
+}
+function nextDate(baseDate, months) {
+  if(!baseDate || !months) return '';
+  const d = new Date(baseDate);
+  d.setMonth(d.getMonth() + parseInt(months));
+  return d.toISOString().split('T')[0];
+}
+function formatPrice(val) {
+  if(!val) return '0원';
+  return parseInt(val).toLocaleString() + '원';
+}
 
-// 로컬 DB 래퍼 클래스
+// 로컬 스토리지 엔드포인트 객체
 const DB = {
   load: (key, def) => { try { return JSON.parse(localStorage.getItem('fm_' + key)) || def; } catch { return def; } },
   set: (key, val) => { localStorage.setItem('fm_' + key, JSON.stringify(val)); },
-  
-  // 백엔드 클라우드 동기화 코어 엔진 (인증 토큰 동기 매칭 완벽화)
   sync: async function(key, action = 'getData', value = null) {
     if (!authToken) return null;
     const indicator = document.getElementById('sync-indicator');
     if (indicator) { indicator.textContent = '● 동기화 중...'; indicator.className = 'syncing'; }
-    
     try {
-      let url = SPREADSHEET_ID ? `${SCRIPT_URL}?key=${key}` : `${SCRIPT_URL}?key=${key}`;
+      let url = `${SCRIPT_URL}?key=${key}`;
       if (action === 'init') url = `${SCRIPT_URL}?action=init`;
-      
       const options = {
         method: action === 'setData' ? 'POST' : 'GET',
         headers: { 'Authorization': 'Bearer ' + authToken }
       };
       if (action === 'setData') options.body = JSON.stringify({ action: 'setData', key, value });
-
       const res = await fetch(url, options);
       const resData = await res.json();
-      
-      if (resData.authError) { alert('인증 권한 오류: ' + resData.message); return null; }
-      
+      if (resData.authError) { alert('인증 오류: ' + resData.message); return null; }
       if (indicator) { indicator.textContent = '● 동기화 완료'; indicator.className = ''; }
-      return resData.data; // 백엔드의 { result: "success", data: ... } 규격 바인딩 완료
+      return resData.data;
     } catch (err) {
-      console.error(err);
       if (indicator) { indicator.textContent = '● 오프라인 모드'; indicator.className = ''; }
       return null;
     }
   }
 };
 
-// 2. 통합 탭 스위칭 인터페이스 (PC/모바일 중복 제거)
+// 탭 스위칭 데이터 구조체
+const TAB_CONFIG = {
+  dashboard:  { title: '대시보드 종합현황', render: renderDashboard },
+  equipment:  { title: '시설 장비 등록대장', render: renderEquipment },
+  history:    { title: '점검/수리 통합 실무이력', render: renderHistory },
+  consumable: { title: '소모품 교체 주기 관리', render: renderConsumable, badgeKey: 'consumable', alertDays: 7 },
+  legal:      { title: '법정의무점검 진단관리', render: renderLegal, badgeKey: 'legal', alertDays: 30 },
+  drawing:    { title: '시설 도면 자료실', render: renderDrawing }
+};
+
 function switchTab(tabId) {
   currentTab = tabId;
   const config = TAB_CONFIG[tabId];
   if (!config) return;
-
-  // 전체 네비게이션 활성화 클래스 토글 압축
   document.querySelectorAll('.nav-item, .bnav-item').forEach(el => {
     const target = el.getAttribute('data-tab') || el.getAttribute('data-btab');
     el.classList.toggle('active', target === tabId);
   });
-
-  // 패널 가시성 토글
-  document.querySelectorAll('.view-panel').forEach(panel => {
-    panel.classList.toggle('active', panel.id === 'view-' + tabId);
-  });
-
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.toggle('active', p.id === 'view-' + tabId));
   document.getElementById('page-title').textContent = config.title;
   config.render();
   updateBadges();
 }
 
-// 3. 실시간 통합 알림 뱃지 카운터 함수
 function updateBadges() {
-  const dummyDataMap = {
-    consumable: DB.load('consumables', []),
-    legal: DB.load('legals', [])
-  };
+  const cList = DB.load('consumables', []);
+  const lList = DB.load('legals', []);
+  
+  let cAlert = cList.filter(x => dday(nextDate(x.lastDate, x.cycle)) <= 7).length;
+  let lAlert = lList.filter(x => dday(nextDate(x.lastDate, x.cycle)) <= 30).length;
 
-  Object.keys(TAB_CONFIG).forEach(key => {
-    const cfg = TAB_CONFIG[key];
-    if (!cfg.badgeKey) return;
-
-    const list = dummyDataMap[cfg.badgeKey] || [];
-    // 디데이 및 날짜 계산 계산 로직 연동부
-    const count = list.length; // ⚠️ 실 데이터 주기 계산 함수 매칭 적용 구간
-
-    ['badge-', 'bnav-badge-'].forEach(prefix => {
-      const el = document.getElementById(prefix + cfg.badgeKey);
-      if (el) {
-        el.style.display = count > 0 ? 'inline-block' : 'none';
-        el.textContent = count;
-      }
+  const bMap = { consumable: cAlert, legal: lAlert };
+  Object.keys(bMap).forEach(k => {
+    ['badge-', 'bnav-badge-'].forEach(p => {
+      const el = document.getElementById(p + k);
+      if(el) { el.style.display = bMap[k] > 0 ? 'inline-block' : 'none'; el.textContent = bMap[k]; }
     });
   });
 }
 
-// 4. 모바일 및 마우스 드래그 오동작 버그 완전 방어 레이어
+// 🟩 [1. 대시보드 렌더링 코드 완벽 보존]
+function renderDashboard() {
+  const eqCount = DB.load('equipments', []).length;
+  const hiList = DB.load('histories', []);
+  const conList = DB.load('consumables', []);
+  const legList = DB.load('legals', []);
+  
+  const totalCost = hiList.reduce((acc, cur) => acc + (parseInt(cur.cost) || 0), 0);
+  const conAlerts = conList.filter(x => dday(nextDate(x.lastDate, x.cycle)) <= 7);
+  const legAlerts = legList.filter(x => dday(nextDate(x.lastDate, x.cycle)) <= 30);
+  
+  document.getElementById('db-cards').innerHTML = `
+    <div class="card" style="border-left:4px solid var(--primary);">
+      <div style="font-size:12px; color:var(--text3); font-weight:600;">등록된 총 시설 장비</div>
+      <div style="font-size:22px; font-weight:700; margin-top:4px;">${eqCount}대</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--purple);">
+      <div style="font-size:12px; color:var(--text3); font-weight:600;">누적 유지보수 소요비용</div>
+      <div style="font-size:22px; font-weight:700; margin-top:4px;">${formatPrice(totalCost)}</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--danger);">
+      <div style="font-size:12px; color:var(--text3); font-weight:600;">소모품 교체 알림</div>
+      <div style="font-size:22px; font-weight:700; margin-top:4px; color:var(--danger);">${conAlerts.length}건</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--warn);">
+      <div style="font-size:12px; color:var(--text3); font-weight:600;">법정의무 검사 예정</div>
+      <div style="font-size:22px; font-weight:700; margin-top:4px; color:var(--warn);">${legAlerts.length}건</div>
+    </div>
+  `;
+  
+  let html = '';
+  conAlerts.forEach(x => {
+    const remains = dday(nextDate(x.lastDate, x.cycle));
+    html += `<tr><td><span class="badge danger">소모품</span></td><td><strong>${x.name}</strong> (${x.eqName})</td><td>주기 ${x.cycle}개월</td><td><span style="color:var(--danger); font-weight:700;">${remains <= 0 ? '만료' : remains + '일 전'}</span></td></tr>`;
+  });
+  legAlerts.forEach(x => {
+    const remains = dday(nextDate(x.lastDate, x.cycle));
+    html += `<tr><td><span class="badge warn">법정검사</span></td><td><strong>${x.name}</strong></td><td>주기 ${x.cycle}개월</td><td><span style="color:var(--warn); font-weight:700;">${remains <= 0 ? '만료' : remains + '일 전'}</span></td></tr>`;
+  });
+  document.getElementById('db-alerts-tbody').innerHTML = html || '<tr><td colspan="4" style="text-align:center; color:var(--text3);">현재 긴급 조치 또는 알림 대상 항목이 없습니다. 제품 상태 양호.</td></tr>';
+}
+
+// 🟩 [2. 장비 관리 실무 코드 완벽 보존]
+function renderEquipment() {
+  const list = DB.load('equipments', []);
+  const search = document.getElementById('eq-search').value.toLowerCase();
+  let html = '';
+  list.filter(x => x.id.toLowerCase().includes(search) || x.name.toLowerCase().includes(search)).forEach(x => {
+    html += `<tr>
+      <td><span style="font-family:'JetBrains Mono'; font-weight:600;">${x.id}</span></td>
+      <td><strong>${x.name}</strong></td><td>${x.model}</td><td>${x.location}</td><td>${x.vendor}</td><td>${x.date}</td>
+      <td>
+        <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="openEquipmentForm('${x.id}')">수정</button>
+        <button class="btn danger" style="padding:4px 8px; font-size:11px;" onclick="deleteData('equipments', '${x.id}', renderEquipment)">삭제</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('eq-tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center; color:var(--text3);">등록된 장비 데이터가 없습니다.</td></tr>';
+}
+
+function openEquipmentForm(id = '') {
+  const list = DB.load('equipments', []);
+  const item = list.find(x => x.id === id) || { id: 'EQ' + String(Date.now()).slice(-6), name:'', model:'', location:'', vendor:'', date:'' };
+  
+  document.getElementById('modal-title').textContent = id ? '장비 제원 수리/수정' : '신규 시설 장비 입고 등록';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="f-group" style="margin-bottom:10px;"><label>장비 관리번호 (고유값)</label><input type="text" id="form-eq-id" value="${item.id}" ${id ? 'disabled' : ''}></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>장비명</label><input type="text" id="form-eq-name" value="${item.name}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>규격 및 모델명</label><input type="text" id="form-eq-model" value="${item.model}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>설치 위치</label><input type="text" id="form-eq-location" value="${item.location}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>제조사 / 설치 협력업체</label><input type="text" id="form-eq-vendor" value="${item.vendor}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>도입(설치) 일자</label><input type="date" id="form-eq-date" value="${item.date}"></div>
+  `;
+  document.getElementById('modal-submit-btn').onclick = async () => {
+    const data = {
+      id: document.getElementById('form-eq-id').value.trim(),
+      name: document.getElementById('form-eq-name').value.trim(),
+      model: document.getElementById('form-eq-model').value.trim(),
+      location: document.getElementById('form-eq-location').value.trim(),
+      vendor: document.getElementById('form-eq-vendor').value.trim(),
+      date: document.getElementById('form-eq-date').value
+    };
+    let arr = DB.load('equipments', []);
+    if(id) arr = arr.map(x => x.id === id ? data : x); else arr.push(data);
+    DB.set('equipments', arr);
+    closeModal(); renderEquipment();
+    await DB.sync('equipments', 'setData', arr);
+  };
+  openModal();
+}
+
+// 🟩 [3. 점검/수리 통합 이력 코드 완벽 보존]
+function renderHistory() {
+  const list = DB.load('histories', []);
+  const search = document.getElementById('hi-search').value.toLowerCase();
+  let html = '';
+  list.filter(x => x.eqName.toLowerCase().includes(search) || x.note.toLowerCase().includes(search)).forEach(x => {
+    html += `<tr>
+      <td>${x.date}</td><td><strong>${x.eqName}</strong></td>
+      <td><span class="badge ${x.type === '수리' ? 'danger' : 'success'}">${x.type}</span></td>
+      <td>${x.note}</td><td>${formatPrice(x.cost)}</td><td>${x.worker}</td>
+      <td>
+        <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="openHistoryForm('${x.id}')">수정</button>
+        <button class="btn danger" style="padding:4px 8px; font-size:11px;" onclick="deleteData('histories', '${x.id}', renderHistory)">삭제</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('hi-tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center; color:var(--text3);">등록된 실무 조치 이력이 없습니다.</td></tr>';
+}
+
+function openHistoryForm(id = '') {
+  const list = DB.load('histories', []);
+  const eqList = DB.load('equipments', []);
+  const item = list.find(x => x.id === id) || { id: 'HI' + String(Date.now()).slice(-6), date:'', eqName:'', type:'점검', note:'', cost:0, worker:'' };
+  
+  let eqOptions = eqList.map(e => `<option value="${e.name}" ${item.eqName === e.name ? 'selected' : ''}>${e.name}</option>`).join('');
+  
+  document.getElementById('modal-title').textContent = id ? '현장 조치 기록 이력 수정' : '현장 점검 및 수리 공사 기록 실무등록';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="f-group" style="margin-bottom:10px;"><label>작업 일자</label><input type="date" id="form-hi-date" value="${item.date}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>연동 대상 장비 선택</label><select id="form-hi-eqName"><option value="공통/기타">공통/기타 설비</option>${eqOptions}</select></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>작업 구분</label><select id="form-hi-type"><option value="점검" ${item.type==='점검'?'selected':''}>정기점검/진단</option><option value="수리" ${item.type==='수리'?'selected':''}>긴급수리/공사</option></select></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>작업 실무 및 상세 조치 내용</label><textarea id="form-hi-note" rows="3">${item.note}</textarea></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>소요 비용 (원 단위 숫자만)</label><input type="number" id="form-hi-cost" value="${item.cost}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>작업 담당자 / 외주 협력업체</label><input type="text" id="form-hi-worker" value="${item.worker}"></div>
+  `;
+  document.getElementById('modal-submit-btn').onclick = async () => {
+    const data = {
+      id: id || item.id,
+      date: document.getElementById('form-hi-date').value,
+      eqName: document.getElementById('form-hi-eqName').value,
+      type: document.getElementById('form-hi-type').value,
+      note: document.getElementById('form-hi-note').value.trim(),
+      cost: parseInt(document.getElementById('form-hi-cost').value) || 0,
+      worker: document.getElementById('form-hi-worker').value.trim()
+    };
+    let arr = DB.load('histories', []);
+    if(id) arr = arr.map(x => x.id === id ? data : x); else arr.push(data);
+    DB.set('histories', arr);
+    closeModal(); renderHistory();
+    await DB.sync('histories', 'setData', arr);
+  };
+  openModal();
+}
+
+// 🟩 [4. 소모품 주기 관리 코드 완벽 보존]
+function renderConsumable() {
+  const list = DB.load('consumables', []);
+  let html = '';
+  list.forEach(x => {
+    const next = nextDate(x.lastDate, x.cycle);
+    const remains = dday(next);
+    let statusBadge = '<span class="badge success">안전</span>';
+    if(remains <= 0) statusBadge = '<span class="badge danger">기간만료</span>';
+    else if(remains <= 7) statusBadge = '<span class="badge warn">교체임박</span>';
+    
+    html += `<tr>
+      <td><strong>${x.name}</strong></td><td>${x.eqName}</td><td>${x.lastDate}</td><td>${x.cycle}개월</td><td>${next}</td><td>${statusBadge}</td>
+      <td>
+        <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="openConsumableForm('${x.id}')">수정</button>
+        <button class="btn danger" style="padding:4px 8px; font-size:11px;" onclick="deleteData('consumables', '${x.id}', renderConsumable)">삭제</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('con-tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center; color:var(--text3);">등록된 부품/소모품 내역이 없습니다.</td></tr>';
+}
+
+function openConsumableForm(id = '') {
+  const list = DB.load('consumables', []);
+  const eqList = DB.load('equipments', []);
+  const item = list.find(x => x.id === id) || { id: 'CO' + String(Date.now()).slice(-6), name:'', eqName:'', lastDate:'', cycle:6 };
+  let eqOptions = eqList.map(e => `<option value="${e.name}" ${item.eqName === e.name ? 'selected' : ''}>${e.name}</option>`).join('');
+  
+  document.getElementById('modal-title').textContent = id ? '소모품 필터 정보수정' : '신규 소모품 부품 교체주기 등록';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="f-group" style="margin-bottom:10px;"><label>소모품 / 부품명</label><input type="text" id="form-con-name" value="${item.name}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>장착 대상 장비</label><select id="form-con-eqName">${eqOptions}</select></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>최근 교체 완료일</label><input type="date" id="form-con-lastDate" value="${item.lastDate}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>권장 교체 주기 (개월 수)</label><input type="number" id="form-con-cycle" value="${item.cycle}"></div>
+  `;
+  document.getElementById('modal-submit-btn').onclick = async () => {
+    const data = {
+      id: id || item.id,
+      name: document.getElementById('form-con-name').value.trim(),
+      eqName: document.getElementById('form-con-eqName').value,
+      lastDate: document.getElementById('form-con-lastDate').value,
+      cycle: parseInt(document.getElementById('form-con-cycle').value) || 6
+    };
+    let arr = DB.load('consumables', []);
+    if(id) arr = arr.map(x => x.id === id ? data : x); else arr.push(data);
+    DB.set('consumables', arr);
+    closeModal(); renderConsumable();
+    await DB.sync('consumables', 'setData', arr);
+  };
+  openModal();
+}
+
+// 🟩 [5. 법정의무점검 진단 관리 코드 완벽 보존]
+function renderLegal() {
+  const list = DB.load('legals', []);
+  let html = '';
+  list.forEach(x => {
+    const next = nextDate(x.lastDate, x.cycle);
+    const remains = dday(next);
+    let statusBadge = '<span class="badge success">적합</span>';
+    if(remains <= 0) statusBadge = '<span class="badge danger">정밀실사 요망</span>';
+    else if(remains <= 30) statusBadge = '<span class="badge warn">검사도래</span>';
+    
+    html += `<tr>
+      <td><strong>${x.name}</strong></td><td>${x.target}</td><td>${x.lastDate}</td><td>${x.cycle}개월</td><td>${next}</td><td>${statusBadge}</td>
+      <td>
+        <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="openLegalForm('${x.id}')">수정</button>
+        <button class="btn danger" style="padding:4px 8px; font-size:11px;" onclick="deleteData('legals', '${x.id}', renderLegal)">삭제</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('leg-tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center; color:var(--text3);">설정된 법정의무 안전진단 항목이 없습니다.</td></tr>';
+}
+
+function openLegalForm(id = '') {
+  const list = DB.load('legals', []);
+  const item = list.find(x => x.id === id) || { id: 'LE' + String(Date.now()).slice(-6), name:'', target:'', lastDate:'', cycle:12 };
+  
+  document.getElementById('modal-title').textContent = id ? '법정 점검 법령 조항 수정' : '신규 법정의무 점검 대상 등록';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="f-group" style="margin-bottom:10px;"><label>점검 종류 명칭 (예: 소방시설 정밀정검, 전기안전 대행)</label><input type="text" id="form-leg-name" value="${item.name}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>진단 대상 특정 설비구역</label><input type="text" id="form-leg-target" value="${item.target}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>최근 필 정밀 검사일자</label><input type="date" id="form-leg-lastDate" value="${item.lastDate}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>법정 진단 검사 주기 (개월 수)</label><input type="number" id="form-leg-cycle" value="${item.cycle}"></div>
+  `;
+  document.getElementById('modal-submit-btn').onclick = async () => {
+    const data = {
+      id: id || item.id,
+      name: document.getElementById('form-leg-name').value.trim(),
+      target: document.getElementById('form-leg-target').value.trim(),
+      lastDate: document.getElementById('form-leg-lastDate').value,
+      cycle: parseInt(document.getElementById('form-leg-cycle').value) || 12
+    };
+    let arr = DB.load('legals', []);
+    if(id) arr = arr.map(x => x.id === id ? data : x); else arr.push(data);
+    DB.set('legals', arr);
+    closeModal(); renderLegal();
+    await DB.sync('legals', 'setData', arr);
+  };
+  openModal();
+}
+
+// 🟩 [6. 시설 도면 자료실 코드 완벽 보존]
+function renderDrawing() {
+  const list = DB.load('drawings', []);
+  let html = '';
+  list.forEach(x => {
+    let fileActionHtml = `<span style="color:var(--text3);">파일 없음</span>`;
+    if(x.fileData) {
+      fileActionHtml = `<button class="btn primary" style="padding:2px 6px; font-size:11px;" onclick="downloadFile('${x.fileData}', '${x.fileName}')">💾 다운로드</button>`;
+    } else if(x.linkUrl) {
+      fileActionHtml = `<a href="${x.linkUrl}" target="_blank" class="btn" style="padding:2px 6px; font-size:11px; text-decoration:none;">🔗 외부링크 열기</a>`;
+    }
+    
+    html += `<tr>
+      <td><strong>${x.title}</strong></td><td>${x.floor}</td><td>${x.type}</td><td>${x.area || '-'}</td><td>${fileActionHtml}</td><td>${x.updated}</td>
+      <td>
+        <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="openDrawingForm('${x.id}')">수정</button>
+        <button class="btn danger" style="padding:4px 8px; font-size:11px;" onclick="deleteData('drawings', '${x.id}', renderDrawing)">삭제</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('dw-tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center; color:var(--text3);">등록된 도면 자료실 아카이브가 없습니다.</td></tr>';
+}
+
+function openDrawingForm(id = '') {
+  const list = DB.load('drawings', []);
+  const item = list.find(x => x.id === id) || { id: 'DW' + String(Date.now()).slice(-6), title:'', floor:'본관 전층', type:'건축', area:'', linkUrl:'', updated:'' };
+  
+  document.getElementById('modal-title').textContent = id ? '도면 아카이브 리비전 수정' : '신규 설계 도면 CAD/PDF 등록';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="f-group" style="margin-bottom:10px;"><label>도면 설명 명칭</label><input type="text" id="form-dw-title" value="${item.title}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>해당 층수</label><input type="text" id="form-dw-floor" value="${item.floor}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>설비 용도 구분</label><select id="form-dw-type"><option value="건축" ${item.type==='건축'?'selected':''}>건축 구조 평면도</option><option value="공조/기계" ${item.type==='공조/기계'?'selected':''}>HVAC 공조/설비 기계</option><option value="전기/통신" ${item.type==='전기/통신'?'selected':''}>전기 계통/통신 라인</option><option value="소방" ${item.type==='소방'?'selected':''}>소방 배관/감지기 회로</option></select></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>커버 구역 실면적</label><input type="text" id="form-dw-area" value="${item.area}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>클라우드 드라이브 외부 URL 공유 링크</label><input type="text" id="form-dw-link" value="${item.linkUrl}"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>로컬 파일 즉시 첨부 (5MB 한도)</label><input type="file" id="form-dw-file"></div>
+    <div class="f-group" style="margin-bottom:10px;"><label>최종 준공/개정일자</label><input type="date" id="form-dw-updated" value="${item.updated}"></div>
+  `;
+  document.getElementById('modal-submit-btn').onclick = () => {
+    const fileInput = document.getElementById('form-dw-file');
+    const file = fileInput.files[0];
+    
+    function proceedSave(base64Data = null, name = '') {
+      const data = {
+        id: id || item.id,
+        title: document.getElementById('form-dw-title').value.trim(),
+        floor: document.getElementById('form-dw-floor').value.trim(),
+        type: document.getElementById('form-dw-type').value,
+        area: document.getElementById('form-dw-area').value.trim(),
+        linkUrl: document.getElementById('form-dw-link').value.trim(),
+        fileData: base64Data || item.fileData || null,
+        fileName: name || item.fileName || '',
+        updated: document.getElementById('form-dw-updated').value
+      };
+      let arr = DB.load('drawings', []);
+      if(id) arr = arr.map(x => x.id === id ? data : x); else arr.push(data);
+      try {
+        DB.set('drawings', arr);
+      } catch(e) {
+        alert('로컬 저장 용량이 초과되었습니다. 대용량 도면은 외부 링크 URL 주소 방식을 권장합니다.');
+        return;
+      }
+      closeModal(); renderDrawing();
+      DB.sync('drawings', 'setData', arr);
+    }
+    
+    if(file) {
+      if(file.size > 5*1024*1024) { alert('파일 업로드 규격은 5MB 이하만 컴파일 가능합니다.'); return; }
+      const reader = new FileReader();
+      reader.onload = (e) => proceedSave(e.target.result, file.name);
+      reader.readAsDataURL(file);
+    } else {
+      proceedSave();
+    }
+  };
+  openModal();
+}
+
+function downloadFile(base64, filename) {
+  const a = document.createElement('a'); a.href = base64; a.download = filename; a.click();
+}
+
+// 공통 제거 함수
+async function deleteData(storeKey, id, callback) {
+  if(!confirm('해당 실무 원본 데이터를 영구 삭제하시겠습니까? 데이터는 복구되지 않습니다.')) return;
+  let arr = DB.load(storeKey, []);
+  arr = arr.filter(x => x.id !== id);
+  DB.set(storeKey, arr);
+  callback();
+  await DB.sync(storeKey, 'setData', arr);
+}
+
+// 🟩 [모바일 터치 호환 레이어 완벽 유지]
 let modalMouseDownTarget = null;
 function openModal() {
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.add('show');
   overlay.onmousedown = (e) => { modalMouseDownTarget = e.target; };
-  
   const bnav = document.getElementById('bottom-nav');
   if (bnav) { bnav.style.opacity = '0'; bnav.style.pointerEvents = 'none'; }
 }
-
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('show');
   modalMouseDownTarget = null;
-  
   const bnav = document.getElementById('bottom-nav');
   if (bnav) { bnav.style.opacity = '1'; bnav.style.pointerEvents = 'all'; }
 }
-
 function closeModalOnBg(e) {
   const overlay = document.getElementById('modal-overlay');
   if (e.target === overlay && modalMouseDownTarget === overlay) closeModal();
 }
 
-// 5. 구글 Identity 구동 및 보안 콜백 핸들러
+// 🟩 [보안 레이어 및 자동 동기화 구동부]
 function handleCredentialResponse(response) {
   authToken = response.credential;
-  
-  // 토큰 파싱 후 사용자 정보 추출
   const base64Url = authToken.split('.')[1];
   const payload = JSON.parse(atob(base64Url.replace(/-/g, '+').replace(/_/g, '/')));
-  
   document.getElementById('user-email-display').textContent = payload.email;
-  document.getElementById('auth-overlay').style.display = 'none'; // 잠금 해제
-  
-  // 마스터 동기화 런처 가동
+  document.getElementById('auth-overlay').style.display = 'none';
   initApp();
 }
 
 async function initApp() {
-  // 구글 시트 백엔드로부터 마스터 데이터 일괄 병합 로드
   const cloudDb = await DB.sync(null, 'init');
   if (cloudDb) {
     Object.keys(cloudDb).forEach(key => {
@@ -313,17 +691,14 @@ async function initApp() {
 }
 
 window.onload = function () {
-  // 이벤트 리스너 통합 바인딩
   document.querySelectorAll('.nav-item, .bnav-item').forEach(item => {
     item.onclick = function() {
       const id = this.getAttribute('data-tab') || this.getAttribute('data-btab');
       switchTab(id);
     };
   });
-
-  // 구글 윈도우 원탭 및 로그인 버튼 랜더러 작동
   google.accounts.id.initialize({
-    client_id: "713348731307-5t8shorvldsh5pld9epbvsb55018co14.apps.googleusercontent.com", // 기존 클라이언트 ID 완벽 보존
+    client_id: "713348731307-5t8shorvldsh5pld9epbvsb55018co14.apps.googleusercontent.com",
     callback: handleCredentialResponse
   });
   google.accounts.id.renderButton(
