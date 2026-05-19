@@ -960,7 +960,160 @@ function saveDw(id) {
     doSave(existing?.fileData||null, existing?.fileName||null);
   }
 }
+/* ════════════════════════════════════
+   [보완] 데이터 래퍼 및 유틸리티 함수
+════════════════════════════════════ */
+function getEq() { return DB.load('equipment', []); }
+function getHist() { return DB.load('history', []); }
+function getCons() { return DB.load('consumable', []); }
+function getLegal() { return DB.load('legal', []); }
 
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function eqName(eqId) {
+  const eq = getEq().find(e => e.id === eqId);
+  return eq ? eq.name : '알 수 없는 장비';
+}
+
+function nextDate(lastDate, cycleDays) {
+  if (!lastDate) return '-';
+  const d = new Date(lastDate);
+  d.setDate(d.getDate() + parseInt(cycleDays));
+  return d.toISOString().split('T')[0];
+}
+
+function dday(targetDate) {
+  if (targetDate === '-') return 999;
+  const diff = new Date(targetDate) - new Date(today());
+  return Math.ceil(diff / (1024 * 60 * 60 * 24));
+}
+
+function ddayBadge(d) {
+  if (d === 999) return `<span class="badge badge-gray">미정</span>`;
+  if (d < 0) return `<span class="dday-danger">기한 초과 (${Math.abs(d)}일)</span>`;
+  if (d === 0) return `<span class="dday-danger">D-Day</span>`;
+  if (d <= 7) return `<span class="dday-warn">D-${d}</span>`;
+  return `<span class="dday-ok">D-${d}</span>`;
+}
+
+function resultBadge(res) {
+  if (res === '양호') return `<span class="badge badge-green">양호</span>`;
+  if (res === '일부결함') return `<span class="badge badge-warn">일부결함</span>`;
+  if (res === '개선필요') return `<span class="badge badge-purple">개선필요</span>`;
+  return `<span class="badge badge-danger">사용제한</span>`;
+}
+
+// 실시간 알림 뱃지 갱신 로직 (소모품/법정점검 잔여 기한 기준)
+function updateBadges() {
+  const cCount = getCons().filter(c => dday(nextDate(c.lastDate, c.cycle)) <= 7).length;
+  const lCount = getLegal().filter(l => dday(nextDate(l.lastDate, l.cycle)) <= 7).length;
+
+  const toggleBadge = (id, count) => {
+    const el = document.getElementById(id);
+    if(el) {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+  };
+
+  toggleBadge('badge-consumable', cCount);
+  toggleBadge('bnav-badge-consumable', cCount);
+  toggleBadge('badge-legal', lCount);
+  toggleBadge('bnav-badge-legal', lCount);
+}
+
+/* ════════════════════════════════════
+   [보완] 모바일 이미지 압축 및 업로드 핸들러
+════════════════════════════════════ */
+function handleImageUpload(input, previewImgId, containerId) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // 구글 시트 용량 최적화를 위한 리사이징 (최대폭 600px)
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      const MAX_WIDTH = 600;
+
+      if (width > MAX_WIDTH) {
+        height *= MAX_WIDTH / width;
+        width = MAX_WIDTH;
+      }
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // 압축된 Base64 데이터 추출 (용량 절감)
+      const resizedData = canvas.toDataURL('image/jpeg', 0.7);
+      
+      input.setAttribute('data-resized', resizedData);
+      input.setAttribute('data-filename', file.name);
+
+      const previewImg = document.getElementById(previewImgId);
+      const container = document.getElementById(containerId);
+      if (previewImg && container) {
+        previewImg.src = resizedData;
+        container.style.display = 'block';
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// 대시보드 및 장비대장 기본 뷰 구성 (초기 구동용 예시)
+function renderDashboard() {
+  const eq = getEq();
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-4">
+      <div class="stat-card blue"><div class="stat-label">전체 설비 장비</div><div class="stat-value">${eq.length}</div></div>
+      <div class="stat-card green"><div class="stat-label">정상 가동 설비</div><div class="stat-value">${eq.filter(e=>e.status==='정상').length}</div></div>
+      <div class="stat-card danger"><div class="stat-label">고장/정지 설비</div><div class="stat-value">${eq.filter(e=>e.status==='고장'||e.status==='사용중지').length}</div></div>
+      <div class="stat-card purple"><div class="stat-label">5층 리뉴얼 대상</div><div class="stat-value">${eq.filter(e=>e.renewal).length}</div></div>
+    </div>
+  `;
+  document.getElementById('topbar-actions').innerHTML = '';
+}
+
+function renderEquipment() {
+  const eq = getEq();
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="openEqModal()">+ 장비 등록</button>`;
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>장비명</th><th>위치</th><th>위험등급</th><th>상태</th><th>관리대상 물질</th><th>수정</th></tr></thead>
+          <tbody>
+            ${eq.length===0?'<tr><td colspan="6" class="empty">등록된 장비가 없습니다.</td></tr>':
+              eq.map(e=>`<tr>
+                <td class="bold">${e.name} ${e.renewal?'<span class="renewal-tag">리뉴얼</span>':''}</td>
+                <td>${e.location}</td>
+                <td>${e.risk}</td>
+                <td><span class="dot ${e.status==='정상'?'dot-green':e.status==='점검중'?'dot-warn':'dot-danger'}"></span> ${e.status}</td>
+                <td>${e.substance||'-'}</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openEqModal('${e.id}')">수정</button></td>
+              </tr>`).join('')
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// 앱 실행 시 첫 화면 로드 및 동기화 연동
+window.onload = async function() {
+  // 앱 구동 시 백엔드 구글 시트에서 최신 데이터를 동기화하도록 확장 가능
+  switchTab('dashboard');
+};
 /* ════════════════════════════════════
    CORE APP VIEW NAVIGATION CONTROLLER
 ════════════════════════════════════ */
